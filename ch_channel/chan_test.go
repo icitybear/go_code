@@ -18,7 +18,7 @@ func worker(wg *sync.WaitGroup) {
 		// slect多路选择与超时控制
 		select {
 		//只需要case  接收channel数据  如果没有default则一直等待 (因为没收到默认走default)
-		case num, ok := <-ch:
+		case num, ok := <-ch: //非阻塞式
 			fmt.Printf("num is %d \n", num)
 			if !ok {
 				// 管道结束

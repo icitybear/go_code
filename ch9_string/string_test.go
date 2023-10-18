@@ -1,15 +1,58 @@
 package string_test
 
 import (
+	"fmt"
 	"testing"
+	"unicode/utf8"
+	"unsafe"
 )
+
+// 字符串
+
+func TestBase(t *testing.T) {
+	//双引号表示一个字符串，双引号内字符可以转义
+	fmt.Println("\"zifu\tchuan\"")
+	// 单引号 单引号只能用来包裹一个字节的ASCII码字符byte 也可以是多字节的字符 rune
+	str := 'z'
+	fmt.Println(str)             // 输出122
+	fmt.Println(`"zifu\tchuan"`) //反引号引起来的字符串就不支持转义
+	fmt.Println("'zifuchuan'")
+
+	// 字符串拼接和访问其他练习记录
+	// len字符串 字节数 理解字符串Unicode（UTF-8），ASCII字符集
+	theme := "中国\ta bc"
+	l := len(theme) //\t和空格各算一个字节 中文3个字节 输出11
+	fmt.Println(l)
+	fmt.Println(theme[7]) //a 97
+	for i := 0; i < l; i++ {
+		fmt.Printf("ascii: %c  %d\n", theme[i], theme[i])
+	}
+	l = utf8.RuneCountInString(theme) //7个utf8字符
+	fmt.Println(l)
+	for _, s := range theme {
+		fmt.Printf("Unicode: %c  %d\n", s, s)
+	}
+}
+
+func TestStringByteRune(t *testing.T) {
+	s0 := "中国\ta bc"
+	fmt.Printf("值=%v, 类型是%T\n", s0, s0)
+	s1 := []rune(s0) //字符串 中 转成 rune unicode码点
+	fmt.Printf("值=%v, 类型是%T\n", s1, s1)
+	s2 := []byte(s0) //字符串 中 转成 byte字节切片
+	fmt.Printf("值=%v, 类型是%T\n", s2, s2)
+	// 遍历切片
+	for _, s := range s2 {
+		fmt.Printf("uint8: %c  %d\n", s, s)
+	}
+}
 
 func TestString(t *testing.T) {
 	var s string
 	t.Log(s) //初始化为默认零值“”
 	s = "hello"
 	t.Log(len(s))
-	//s[1] = '3' //string是不可变的byte slice
+	//s[1] = '3' //string是不可变的byte slice 只能访问
 	//s = "\xE4\xB8\xA5" //可以存储任何二进制数据
 	s = "\xE4\xBA\xBB\xFF"
 	t.Log(s)
@@ -17,17 +60,20 @@ func TestString(t *testing.T) {
 
 	s = "中国s"
 	t.Log(s)
-	t.Log(len(s)) //是byte数
-	//访问字符串字符，字符串的内容（纯字节）可以通过标准索引法来获取，在方括号[ ]内写入索引，索引从 0 开始计数（只对纯 ASCII 码的字符串有效）
+	t.Log(len(s)) //是byte数 如果算中文个数用utf8  => 7
+	//访问字符串字符，字符串的内容（纯字节）可以通过标准索引法来获取，
+	//在方括号[ ]内写入索引，索引从 0 开始计数（只对纯 ASCII 码的字符串有效）
 	//注意：获取字符串中某个字节的地址属于非法行为，例如 &str[i]
-	c := []rune(s) //字符串 中 转成 rune unicode码点
+
+	c := []rune(s) //字符串 中 转成 rune unicode码点  utf8编码
 	t.Log(c)       //[20013 22269 115]
-	t.Log(len(c))
+	t.Log(len(c))  //这里也就是c的切片长度了 =>3
+
 	// unsafe.Sizeof返回变量在内存中占用的字节数(切记，如果是slice，则不会返回这个slice在内存中的实际占用长度)
-	//t.Log("rune size:", unsafe.Sizeof(c[0]))
+	t.Log("rune size:", unsafe.Sizeof(c[0])) // =>4
 	// 不同编码下
-	t.Logf("中 unicode %x", c[0])
-	t.Logf("中 UTF8 %x", s)
+	t.Logf("中 unicode %x %v %c", c[0], c[0], c[0]) // unicode 4e2d 20013 中
+	t.Logf("中 UTF8 %x %v", s, s)                   //字符串地址 e4b8ade59bbd73
 }
 
 func TestStringToRune(t *testing.T) {

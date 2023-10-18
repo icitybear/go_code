@@ -6,7 +6,9 @@ import (
 	"unsafe"
 )
 
-//变量名的首字母和字段首字母必须大写,首字母大写表示公开 实例,也可以叫对象 结构体关键字 struct
+// 类的成员可见性 值方法和指针方法
+
+// 变量名的首字母和字段首字母必须大写,首字母大写表示公开 实例,也可以叫对象 结构体关键字 struct
 type Employee struct {
 	Id   string
 	Name string
@@ -44,8 +46,8 @@ func TestCreateEmployeeObj(t *testing.T) {
 	t.Log(e1.Name)
 	t.Log(e1.Id)
 
-	t.Log(e2)
-	t.Log(e2.Name)
+	// t.Log(e2)
+	// t.Log(e2.Name)
 	t.Logf("e is %T", e)
 	t.Logf("e2 is %T", e2)
 }

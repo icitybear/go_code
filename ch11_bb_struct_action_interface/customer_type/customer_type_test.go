@@ -6,9 +6,10 @@ import (
 	"time"
 )
 
+// 闭包实现装饰器模式
 type IntConv func(op int) int //自定义类型
 
-//包一层必包 算函数调用时长
+// 包一层必包 算函数调用时长
 func timeSpent(inner IntConv) IntConv {
 	return func(n int) int {
 		start := time.Now()

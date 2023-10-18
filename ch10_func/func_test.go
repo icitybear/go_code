@@ -17,8 +17,8 @@ func returnMultiValues() (int, int) {
 	return rand.Intn(10), rand.Intn(20)
 }
 
-//函数作为参数 以及函数作为返回值
-//timeSpent在这个闭包函数中传入的是一个函数 inner func(op int) int 相当于inner 的类型是func(opt int) int
+// 函数作为参数 以及函数作为返回值
+// timeSpent在这个闭包函数中传入的是一个函数 inner func(op int) int 相当于inner 的类型是func(opt int) int
 func timeSpent(inner func(op int) int) func(op int) int {
 	return func(n int) int {
 		start := time.Now()
@@ -50,8 +50,8 @@ func TestFn(t *testing.T) {
 	t.Log(tsSF(10))
 }
 
-//函数 可变参数 被转化成一个数组，然后通过数组遍历
-//可变参数类型约束为 int，如果你希望传任意类型，可以指定类型为 interface{}
+// 函数 可变参数 被转化成一个数组，然后通过数组遍历
+// 可变参数类型约束为 int，如果你希望传任意类型，可以指定类型为 interface{}
 func Sum(ops ...int) int {
 	ret := 0
 	//从内部实现机理上来说，类型...type本质上是一个数组切片，也就是[]type，
@@ -62,6 +62,7 @@ func Sum(ops ...int) int {
 	return ret
 }
 
+// 测试可变参数
 func TestVarParam(t *testing.T) {
 	t.Log(Sum(1, 2, 3, 4))
 	t.Log(Sum(1, 2, 3, 4, 5))
@@ -94,7 +95,7 @@ func TestDefer(t *testing.T) {
 	//panic("err")
 }
 
-//adder 函数返回的时候返回的是个闭包
+// adder 函数返回的时候返回的是个闭包
 func adder() func(int) int {
 	sum := -1 // 自由变量
 	fmt.Printf("adder %d", sum)
@@ -165,7 +166,7 @@ func TestBbsl(t *testing.T) {
 	fmt.Printf("%p\n", &accumulator2) //0xc00000e050
 }
 
-//递归 斐波那契数列
+// 递归 斐波那契数列
 func TestBbsl2(t *testing.T) {
 	result := 0
 	for i := 1; i <= 10; i++ {
@@ -186,6 +187,7 @@ func TestBbsl3(t *testing.T) {
 	result := Factorial(3)
 	fmt.Printf("Factorial is: %d\n", result)
 }
+
 func Factorial(n uint64) (result uint64) {
 	if n > 0 {
 		result = n * Factorial(n-1)

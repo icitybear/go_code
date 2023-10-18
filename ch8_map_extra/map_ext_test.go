@@ -2,6 +2,7 @@ package map_ext
 
 import "testing"
 
+// 用途
 func TestMapWithFunValue(t *testing.T) {
 	m := map[int]func(op int) int{}
 	m[1] = func(op int) int { return op }
@@ -21,6 +22,7 @@ func TestMapForSet(t *testing.T) {
 	}
 	mySet[3] = true
 	t.Log(len(mySet))
+	// 删除 长度动态变化 删除不存在键的也不会panic
 	delete(mySet, 1)
 	n = 1
 	if mySet[n] {
@@ -30,3 +32,5 @@ func TestMapForSet(t *testing.T) {
 	}
 	t.Log(len(mySet))
 }
+
+// map查找元素的 底层原理 hash表 将键转化为哈希值进行存储

@@ -5,6 +5,7 @@ import (
 	"testing"
 )
 
+// 接口篇 空接口
 // 空接口标识任意类型 i, ok := p.(int) 转换类型 需要传入接口数据就是该类型
 func DoSomething(p interface{}) {
 

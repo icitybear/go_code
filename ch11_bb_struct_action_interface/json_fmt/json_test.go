@@ -6,6 +6,7 @@ import (
 	"testing"
 )
 
+// 结构体序列化json 反射里tag标签
 type Student struct {
 	Name string
 	Age  int

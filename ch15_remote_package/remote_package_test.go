@@ -3,9 +3,10 @@ package remote
 import (
 	"testing"
 
-	cm "github.com/easierway/concurrent_map"
+	cm "github.com/easierway/concurrent_map" // 包别名
 )
 
+// 第三方库easierway的包concurrent_map
 func TestConcurrentMap(t *testing.T) {
 	m := cm.CreateConcurrentMap(99)
 	m.Set(cm.StrKey("key"), 10)
