@@ -2,6 +2,8 @@ package series
 
 import "fmt"
 
+// import > const > var > init
+// init 初始化 上到下 内到外
 func init() {
 	fmt.Println("init1")
 }

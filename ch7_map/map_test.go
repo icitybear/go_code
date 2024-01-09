@@ -1,6 +1,8 @@
 package my_map
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestInitMap(t *testing.T) {
 	// var m0 map[int]string
@@ -27,6 +29,7 @@ func TestAccessNotExistingKey(t *testing.T) {
 	t.Log(m) // map[]
 	// 声明并初始化
 	m1 := map[int]string{}
+	t.Logf("%T, %v", m1[1], m1[1])
 	t.Log(m1[1])
 	m1[2] = "0"
 	t.Log(m1[2])

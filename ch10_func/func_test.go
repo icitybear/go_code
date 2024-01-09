@@ -68,33 +68,6 @@ func TestVarParam(t *testing.T) {
 	t.Log(Sum(1, 2, 3, 4, 5))
 }
 
-// 延迟执行函数
-// defer 在函数执行完之后 return 前才执行
-// 通常用于清理某些资源和处理某些异常
-// 在一个函数中,如果有多个 defer 那它的执行顺序是从后往前执行
-var tmpStr string = "hello world"
-
-// panic 程序异常中断,在go里面代表了不可修复的错误,在go中defer在panic之后也是会执行的
-func TestDefer(t *testing.T) {
-	defer func() {
-		fmt.Println("clear resources.")
-	}()
-
-	x := 10
-	defer func(x int) {
-		x++
-		jbStr := "city"
-		tmpStr = tmpStr + "ddd"
-		fmt.Println(tmpStr, jbStr)
-		fmt.Println("defer ", x)
-	}(x) //这里调用了x变量
-	//defer后面的函数在入栈的时候保存的是入栈那一刻的值，而当时x的值是10，所以后期对x修改，并不会影响栈内函数的值
-	x += 5
-	fmt.Println("Start", x)
-	fmt.Println(tmpStr)
-	//panic("err")
-}
-
 // adder 函数返回的时候返回的是个闭包
 func adder() func(int) int {
 	sum := -1 // 自由变量

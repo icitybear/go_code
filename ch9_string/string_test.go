@@ -3,6 +3,7 @@ package string_test
 import (
 	"fmt"
 	"testing"
+	"time"
 	"unicode/utf8"
 	"unsafe"
 )
@@ -85,4 +86,54 @@ func TestStringToRune(t *testing.T) {
 		// t.Logf("%[1]c %[1]x", c)
 		t.Logf("%v %c %x", c, c, c)
 	}
+}
+
+func TestTime(t *testing.T) {
+
+	ti, err := time.Parse("2006-01-02", "2012-03-12")
+	if err != nil {
+		fmt.Println("日期解析错误:", err)
+		return
+	}
+
+	formattedString := ti.Format("20060102") // 所需的字符串格式
+	fmt.Println(formattedString)
+}
+
+func TestTime2(t *testing.T) {
+	// tr, err := ConvertStringToTime("2012-03-12 12:20:10")
+	tr, err := ConvertStringToTime("2012-03-12")
+	if err != nil {
+		fmt.Println("日期解析错误:", err)
+	}
+	fmt.Println(tr)
+}
+
+func ConvertStringToTime(str string) (time.Time, error) {
+	loc, err := time.LoadLocation("Local")
+	if err != nil {
+		return time.Time{}, err
+	}
+
+	t, err := time.ParseInLocation("2006-01-02 15:04:05", str, loc)
+	if err != nil {
+		return time.Time{}, err
+	}
+
+	return t, nil
+}
+
+func Test2(t *testing.T) {
+	// 默认使用UTC
+	endTimer, _ := time.Parse("2006-01-02", "2023-11-23")
+	// 2023-11-23 00:00:00 +0000 UTC 但是数据库存放时会加入自己的时区
+	// 存入数据库datetime时 存的是本地时间 2023-11-23 08:00:00
+	fmt.Print(endTimer)       // 2023-11-23 00:00:00 +0000 UTC
+	fmt.Print(endTimer.UTC()) // 2023-11-23 00:00:00 +0000 UTC
+
+	// go指定使用当地时区
+	endTimer2, _ := time.ParseInLocation("2006-01-02", "2023-11-23", time.Local)
+	fmt.Print(endTimer2) // 2023-11-23 00:00:00 +0800 CST
+	// 当地时区时间转成UTC时间
+	fmt.Print(endTimer2.UTC()) // 2023-11-22 16:00:00 +0000 UTC
 }

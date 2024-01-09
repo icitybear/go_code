@@ -23,6 +23,17 @@ func TestArr(t *testing.T) {
 	t.Logf("d %T %+v", d, d)
 }
 
+func TestArrayEqual(t *testing.T) {
+	a := [2]int{1, 2}
+	b := [2]int{2, 1}
+	if a == b {
+		fmt.Println("equal")
+	} else {
+		fmt.Println("not equal")
+	}
+
+}
+
 func TestArrayInit(t *testing.T) {
 	// 初始化的时候，如果没有填满，则空位会通过对应的元素类型零值填充
 	var arr [3]int
@@ -53,6 +64,15 @@ func TestArrayTravel(t *testing.T) {
 func TestArraySection(t *testing.T) {
 	arr3 := [...]int{1, 2, 3, 4, 5}
 	arr3_sec := arr3[:]
+
+	arr1 := []int{1, 2, 3, 4, 5}
+	var arr2 []int
+	arr4 := append(arr2, arr1...)
+	t.Log(arr4)
+	// first argument to append must be a slice; have untyped nil
+	// arr5 := append(nil, arr1...) // 但是不能直接使用nil
+	// t.Log(arr5)
+
 	t.Log(arr3_sec)
 }
 

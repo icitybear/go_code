@@ -12,20 +12,14 @@ func TestPackage(t *testing.T) {
 	t.Log(series.Square(5))
 }
 
+// 使用github上第三方包
 func TestConcurrentMap(t *testing.T) {
 	m := cm.CreateConcurrentMap(99)
 	m.Set(cm.StrKey("key"), 20)
 	t.Log(m.Get(cm.StrKey("key")))
 }
 
-func TestTry(t *testing.T) {
-	t.Log("My test")
-	a := 1
-	b := 2
-	a, b = b, a
-	t.Log(a, b)
-}
-
+// for的语法
 func TestT2(t *testing.T) {
 	n := 0
 	for n < 5 {
@@ -34,12 +28,14 @@ func TestT2(t *testing.T) {
 	}
 }
 
+// if的语法
 func TestT3(t *testing.T) {
 	if a := 2; a == 2 {
 		t.Log(a)
 	}
 }
 
+// switch 语法
 func TestT4(t *testing.T) {
 	switch a := "d"; a {
 	case "a", "b":

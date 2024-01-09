@@ -189,3 +189,18 @@ func TestDd(t *testing.T) {
 	t.Log(s3)
 	t.Log(s2) //原来s2的也变了
 }
+
+func TestEqual(t *testing.T) {
+	s1 := []int{1, 3}
+	t.Log(len(s1), cap(s1))
+
+	s2 := []int{3, 1}
+	t.Log(len(s2), cap(s2))
+	// 切片时引用类型 不能比较
+	// if s1 == s2 {
+	// 	fmt.Println("equal")
+	// } else {
+	// 	fmt.Println("not equal")
+	// }
+
+}

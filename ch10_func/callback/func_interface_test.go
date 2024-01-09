@@ -20,7 +20,7 @@ func (s *Struct) Call(p interface{}) {
 	fmt.Println("from struct", p)
 }
 
-// 函数定义为类型（方便面向对象）
+// 函数定义为类型（方便面向对象）闭包回调 func->type 适配器模式
 type FuncCaller func(interface{})
 
 // 实现Invoker的Call 实现该接口Invoker
@@ -44,11 +44,13 @@ func TestDT(t *testing.T) {
 	// 使用接口调用实例化结构体的方法Struct.Call
 	invoker.Call("hello world")
 
-	// 将匿名函数转为FuncCaller类型-类型转换 只要底层一样，再赋值给接口
+	// 将匿名函数 转为FuncCaller类型-类型转换 只要底层一样，再赋值给接口
+	// 匿名函数也不能是自定义函数
 	invoker = FuncCaller(func(v interface{}) {
 		fmt.Println("from function", v)
 	})
 
 	// 使用接口调用FuncCaller.Call，内部会调用函数本体
 	invoker.Call("hello") // 这里才调用闭包函数 传餐执行
+	// tag: 遇到调用方参数限定调用Invoker接口的，就成适配器模式了
 }

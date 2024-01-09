@@ -11,8 +11,18 @@ import (
 // 拼接
 func TestJoinFn(t *testing.T) {
 	s := "A,B,C"
+	// s := "" // tag: 注意点
 	parts := strings.Split(s, ",")
-	for _, part := range parts {
+	if parts == nil {
+		t.Log("parts nil") // 不为nil
+	}
+	if len(parts) == 0 {
+		t.Log("parts 0") // 不为0
+	}
+	fmt.Println(parts, len(parts)) // 结果是[] 1  0空字符串
+	// 所以会循环一次
+	for key, part := range parts {
+		fmt.Println(key)
 		t.Log(part)
 	}
 	t.Log(strings.Join(parts, "-"))

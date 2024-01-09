@@ -10,6 +10,11 @@ import (
 var LessThanTwoError = errors.New("n should be not less than 2")
 var LargerThenHundredError = errors.New("n should be not larger than 100")
 
+// fmt.Errorf("用户:%v或设备:%s未找到归因数据", tokenUuid[token], token) 替代 errors.New()
+
+// 实现error接口就行
+// 现在基本用 errors.Is 和errors.As 2方法来判断错误具体归属
+//
 // 函数有返回错误error接口 有错误要处理
 func GetFibonacci(n int) ([]int, error) {
 	if n < 2 {
