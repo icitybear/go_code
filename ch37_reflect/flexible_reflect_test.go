@@ -1,40 +1,10 @@
-package flexible_reflect
+package reflect_test
 
 import (
 	"errors"
 	"reflect"
 	"testing"
 )
-
-func TestDeepEqual(t *testing.T) {
-	a := map[int]string{1: "one", 2: "two", 3: "three"}
-	b := map[int]string{1: "one", 2: "two", 3: "three"}
-	//t.Log(a == b) //map和切片 不能直接比较==  只能更nil比较 a == nil
-	t.Log(reflect.DeepEqual(a, b))
-
-	s1 := []int{1, 2, 3}
-	s2 := []int{1, 2, 3}
-	s3 := []int{2, 3, 1}
-	t.Log("s1 == s2?", reflect.DeepEqual(s1, s2))
-	t.Log("s1 == s3?", reflect.DeepEqual(s1, s3))
-
-}
-
-type Employee struct {
-	EmployeeID string
-	Name       string `format:"normal"`
-	Age        int
-}
-
-func (e *Employee) UpdateAge(newVal int) {
-	e.Age = newVal
-}
-
-type Customer struct {
-	CookieID string
-	Name     string
-	Age      int
-}
 
 func fillBySettings(st interface{}, settings map[string]interface{}) error {
 

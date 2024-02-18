@@ -3,6 +3,7 @@ package json_fmt
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 	"testing"
 )
 
@@ -91,4 +92,37 @@ func TestJsonInterface(t *testing.T) {
 	} else {
 		fmt.Println(err)
 	}
+}
+
+func TestDecoder(t *testing.T) {
+	var request = `{"id":7044144249855934983}`
+
+	var test1 interface{}
+
+	_ = json.Unmarshal([]byte(request), &test1)
+
+	objStr1, err := json.Marshal(test1) // 进行编码
+	if err != nil {
+		fmt.Println("error:", err)
+	}
+	fmt.Println(string(objStr1)) // {"id":7044144249855934983}
+	obj := test1.(map[string]interface{})
+	id := obj["id"]
+	fmt.Printf("%T, %#v \n", id, id) // float64, 7.044144249855935e+18
+
+	// 换成NewDecoder
+	var test interface{}
+	decoder := json.NewDecoder(strings.NewReader(request)) // 从一个流里进行解码
+	decoder.UseNumber()
+	err = decoder.Decode(&test)
+	if err != nil {
+		fmt.Println("error:", err)
+	}
+
+	objStr, err := json.Marshal(test) // 进行编码
+	if err != nil {
+		fmt.Println("error:", err)
+	}
+
+	fmt.Println(string(objStr)) // {"id":7044144249855934983}
 }

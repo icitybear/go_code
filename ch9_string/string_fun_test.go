@@ -121,16 +121,38 @@ func j5() {
 	builder.WriteString(s2)
 	s3 := builder.String()
 	fmt.Printf("s1 + s2 = %s\n", s3)
+	builder.WriteString("citybear apend")
+	s4 := builder.String()
+	fmt.Println(s4)
 }
 
 // 字符串拼接
 func TestXxx(t *testing.T) {
 	// 一次性执行完毕的流程 用+ fmt都无所谓，循环脚本，后台挂起的还是用效率高的
-	j1()
-	j2()
-	j3()
+	// j1()
+	// j2()
+	// j3()
 	// 5 > 4 >321
 	j5()
+}
+
+// 字字符串查询
+func Stripos(haystack string, needle string, offset ...int) int {
+	off := 0
+	if len(offset) > 0 {
+		off = offset[0]
+	}
+	if off > len(haystack) || off < 0 {
+		return -1
+	}
+	// 全转为小写
+	haystack = strings.ToLower(haystack[off:])
+	needle = strings.ToLower(needle)
+	index := strings.Index(haystack, needle) // strings.Contains(info.Content, actionName)
+	if index != -1 {
+		return off + index
+	}
+	return index
 }
 
 type Value struct {

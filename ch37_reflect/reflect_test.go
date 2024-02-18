@@ -133,3 +133,28 @@ func TestDeepEqual(t *testing.T) {
 	fmt.Println(c1 == c2)
 	fmt.Println(reflect.DeepEqual(c1, c2))
 }
+
+type Vehicle struct {
+	ID          int    `json:"id"`
+	CityName    string `json:"city_name"`
+	Provider    string `json:"provider"`
+	PlateNumber string `json:"plate_number"`
+	MaxPeople   int64  `json:"max_people"`
+	PowerType   string `json:"power_type"`
+}
+
+func TestStructTag(t *testing.T) {
+	// 使用reflect.StructTag解析这段文本的tag内容
+	tag := reflect.StructTag(`json:"foo,omitempty" xml:"foo"`)
+	// 直接使用Get获取json定义
+	value := tag.Get("json")
+	fmt.Printf("value: %q\n", value)
+
+	reflectType := reflect.ValueOf(Vehicle{}).Type()
+	fmt.Printf("fields number: %v\n", reflectType.NumField())
+
+	for i := 0; i < reflectType.NumField(); i++ {
+		fmt.Printf("%v", reflectType.Field(i).Name)
+		fmt.Printf("  tag:%v\n", reflectType.Field(i).Tag.Get("json"))
+	}
+}
