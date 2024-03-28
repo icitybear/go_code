@@ -18,30 +18,33 @@ type FT func(arg int)
 // 函数名的本质就是一个指向其函数内存地址的指针常量 匿名函数
 
 // tag: 类型实现自己的成员方法(可以去实现各种接口，对应的自定义注函数就能入这个方法了)  注意这里不使用 *FT 函数类型不能再用指针了
-func (f FT) Hello(arg int) {
+func (f FT) HelloOpt(arg int) {
 	// 参数 刚好是 函数类型FT需要的
-	fmt.Println("FT Hello", arg)
+	fmt.Println("FT HelloOpt before", arg)
 	f(arg) // 把函数f注入了该接口IFC方法Hello的流程  f => FT需要是个函数类型
 }
 
 // FT类型又能实现接口IFC （适配器FT实现接口就行）
 type IFC interface { // 参照http.Handler接口
-	Hello(arg int)
+	HelloOpt(arg int)
 }
 
 func ClientAdaptee(ifc IFC) {
-	ifc.Hello(10)
+	ifc.HelloOpt(10)
 }
 
 func TestXxx(t *testing.T) {
 	// 直接调用函数类型的变量
 	fVar(3) // fVar 3
+	// fVar 是一个函数值，没有调用，因此会打印函数的类型而不是函数的值
+	fmt.Printf("%p, %T, %+v, %T\n", fVar, fVar, FT(fVar), FT(fVar)) // 0x102472270, func(int), 0x102472270, adaptee_test.FT
 
 	// 函数类型的自定义类 如何创建实例, 传递一个函数类型进来，FT的实例就是当成函数用
 	FT(fVar)(3) // 这里的3是fVar函数的参数 FT{}是错误的  fVar 3
+	// FT(fVar(3)) FT是函数类型
 
 	// 调用FT类型的成员方法  底层一样，通过FT包装
-	FT(fVar).Hello(4) // 这里的3是fVar函数的参数  FT Hello 4 与 fVar 4
+	FT(fVar).HelloOpt(4) // 这里的3是fVar函数的参数  FT Hello 4 与 fVar 4
 
 	// tag: 使用了适配器FT 自定义方法fVar
 	// 只依赖接口，不依赖具体实现。依赖倒置原则。ClientAdaptee只需要定义IFC接口，无需关心实现，然后自定义函数用适配器FT包装（该适配器函数实现了该接口）
@@ -53,7 +56,9 @@ func TestXxx(t *testing.T) {
 	// type HandlerFunc func(ResponseWriter, *Request)
 	// HandlerFunc类型就类似FT, 实现了http.Handler接口（http.Handle的参数要求），HandlerFunc就是适配器了，真正要执行的函数是boy（boy要实现对应接口）
 	// http.Handle(pattern string, handler http.Handler)
-	http.Handle("/", http.HandlerFunc(Boy))
+
+	// http.Handle("/", http.HandlerFunc(Boy))
+
 	// HandlerFunc实现了ServeHTTP该方法 就是实现了http.Handler接口
 	// func (f HandlerFunc) ServeHTTP(w ResponseWriter, r *Request) {
 	// 	f(w, r)

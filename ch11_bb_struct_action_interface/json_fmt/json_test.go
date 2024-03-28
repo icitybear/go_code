@@ -92,6 +92,7 @@ func TestJsonInterface(t *testing.T) {
 	} else {
 		fmt.Println(err)
 	}
+
 }
 
 func TestDecoder(t *testing.T) {
@@ -125,4 +126,21 @@ func TestDecoder(t *testing.T) {
 	}
 
 	fmt.Println(string(objStr)) // {"id":7044144249855934983}
+}
+
+// josn标签里的大小写 不影响json字符串里字段的解析（这里大小写不影响）
+type Student1 struct {
+	Name string `json:"name"`
+	Age  int    `json:"AgE"`
+}
+
+func TestXxx(t *testing.T) {
+	stu := "{\"Name\":\"zhangsan\",\"aGe\":18}"
+	var s Student1
+	err := json.Unmarshal([]byte(stu), &s)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Println(s.Name, s.Age)
 }
