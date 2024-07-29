@@ -3,6 +3,7 @@ package my_map
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/iancoleman/orderedmap"
@@ -81,4 +82,56 @@ func TestOrder(t *testing.T) {
 	}
 	c, _ := json.Marshal(o)
 	fmt.Println(string(c))
+}
+
+var (
+	VIVO_MEDIA_CODE_CLIENT_ID_MAP = map[string]map[string]map[string]string{
+		"vivo": {
+			"taqu": {
+				"client_id":         "20210616002",
+				"client_secret":     "ABE6E192C7980631881813F2B8FF1AD69294509FCF8E0680164B72AF11FE541C",
+				"src_id":            "ds-202103082874",
+				"refresh_redis_key": "vivo:refreshtoken",
+				"token_redis_key":   "vivo:token",
+			},
+			"fengyue": {
+				"client_id":         "20240416003",
+				"client_secret":     "C8E175B188AE6190A74EFCA6C2CC937729D74A093301DEB912179132DBE43C73",
+				"src_id":            "ds-202404105996", // 必须配套才不会报错
+				"refresh_redis_key": "fengyue:vivo:refreshtoken",
+				"token_redis_key":   "fengyue:vivo:token",
+			},
+		},
+		"vivoWeb2": {
+			"taqu": {
+				"client_id":         "20230508006",
+				"client_secret":     "928A9CAA71CC5E04B399C1570A0E79B04EDA53157A676F7A0845067288414557",
+				"src_id":            "ds-202304064400",
+				"refresh_redis_key": "taqu_vivoWeb2_refreshtoken", // vivoweb2:refreshtoken是旧规则
+				"token_redis_key":   "taqu_vivoWeb2_token",        // vivoweb2:token是旧规则
+			},
+			"fengyue": {
+				"client_id":         "20240419010",
+				"client_secret":     "8C3146AA66E88A103725D33A88CE76BE130AAF3A6FFF5CB94AA960242500421F",
+				"src_id":            "ds-202404194435",
+				"refresh_redis_key": "fengyue_vivoWeb2_refreshtoken",
+				"token_redis_key":   "fengyue_vivoWeb2_token",
+			},
+		},
+	}
+)
+
+// 嵌套里的ok是链式的
+func TestQt(t *testing.T) {
+	config := VIVO_MEDIA_CODE_CLIENT_ID_MAP
+	mediaCode := "vivoWeb2"
+	// mediaCode = strings.ToLower(mediaCode)
+	productCode := "fengyue"
+	data, ok := config[mediaCode][strings.ToLower(productCode)]
+	if !ok {
+		fmt.Println("not ok")
+		return
+	}
+	fmt.Printf("%s\n", mediaCode)
+	fmt.Printf("ok data:%v", data)
 }

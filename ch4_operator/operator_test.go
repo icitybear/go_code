@@ -33,3 +33,11 @@ func TestBitClear(t *testing.T) {
 	// a 为 0010
 	t.Log(a&Readable == Readable, a&Writable == Writable, a&Executable == Executable)
 }
+
+func TestJisuan(t *testing.T) {
+
+	a := 710 / 100 // 与php不一样会 吞掉小数点 只保留int
+	t.Log(a)
+	b := float32(710) / float32(100)
+	t.Log(b)
+}

@@ -168,3 +168,11 @@ func TestFmt(t *testing.T) {
 	s1 := fmt.Sprintf("%d %v %+v %#v %T %p %f", v1.Value, v1, v1, v1, v1, &v1, float64(v1.Value))
 	fmt.Printf("format is %s\n", s1)
 }
+
+func TestSplit(t *testing.T) {
+	str := "1,"
+	tmp := strings.Split(str, ",") // tag:就算返回空数组 长度也是1
+	fmt.Printf("tmp is:%+v str_len:%d arr_len:%d \n", tmp, len(str), len(tmp))
+	arr := []string{}
+	fmt.Printf("arr is:%+v  arr_len:%d \n", arr, len(arr))
+}

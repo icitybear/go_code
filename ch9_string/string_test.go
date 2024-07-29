@@ -2,8 +2,12 @@ package string_test
 
 import (
 	"fmt"
+	"math/big"
+	"strconv"
+	"strings"
 	"testing"
 	"time"
+	"unicode"
 	"unicode/utf8"
 	"unsafe"
 )
@@ -128,12 +132,64 @@ func Test2(t *testing.T) {
 	endTimer, _ := time.Parse("2006-01-02", "2023-11-23")
 	// 2023-11-23 00:00:00 +0000 UTC 但是数据库存放时会加入自己的时区
 	// 存入数据库datetime时 存的是本地时间 2023-11-23 08:00:00
-	fmt.Print(endTimer)       // 2023-11-23 00:00:00 +0000 UTC
-	fmt.Print(endTimer.UTC()) // 2023-11-23 00:00:00 +0000 UTC
+	fmt.Println(endTimer)       // 2023-11-23 00:00:00 +0000 UTC
+	fmt.Println(endTimer.UTC()) // 2023-11-23 00:00:00 +0000 UTC
 
 	// go指定使用当地时区
 	endTimer2, _ := time.ParseInLocation("2006-01-02", "2023-11-23", time.Local)
-	fmt.Print(endTimer2) // 2023-11-23 00:00:00 +0800 CST
+	fmt.Println(endTimer2) // 2023-11-23 00:00:00 +0800 CST
 	// 当地时区时间转成UTC时间
-	fmt.Print(endTimer2.UTC()) // 2023-11-22 16:00:00 +0000 UTC
+	fmt.Println(endTimer2.UTC()) // 2023-11-22 16:00:00 +0000 UTC
+}
+
+// 驼峰命名转下划线
+func camelToUnderscore(s string) string {
+	var builder strings.Builder
+	lastCaseLower := false
+
+	for i, r := range s {
+		if i > 0 && unicode.IsUpper(r) && lastCaseLower {
+			builder.WriteRune('_')
+		}
+		lastCaseLower = unicode.IsLower(r)
+		builder.WriteRune(unicode.ToLower(r))
+	}
+
+	return builder.String()
+}
+
+// 拼音包
+func Test4(t *testing.T) {
+	//camelCaseStr := "helloWorld"
+	// camelCaseStr := "WoRld"
+	//camelCaseStr := "hello"
+	//camelCaseStr := "你好helloWorld世界"
+
+	camelCaseStr := "hel23loWorld"                   // Hel23loWorld
+	underscoreStr := camelToUnderscore(camelCaseStr) // hel23lo_world
+	// 所以 Id =>id ID =>id   连续的大写字母 默认一个驼峰
+	underscoreStr = camelToUnderscore("hellOWorld") // hell_oworld
+
+	fmt.Println(underscoreStr)
+}
+
+func Test5(t *testing.T) {
+	// a := float64(2.12) * 100
+	// fmt.Println(a)
+
+	money := new(big.Float).SetFloat64(3.136)
+	bs := new(big.Float).SetFloat64(100)
+	valbig := new(big.Float).Mul(money, bs)
+	fmt.Println(valbig.String())
+	tmp := valbig.Text('f', 0) // 3.136   314  四舍五入
+	// tmp := valbig.Text('f', 1) //3.136  313.6
+	fmt.Println(tmp)
+
+	moneyVal, _ := strconv.Atoi("312") //312.6 => 0  312 => 312
+	fmt.Println(moneyVal)
+
+	str := strconv.FormatFloat(3.66, 'f', 0, 64) // 四舍五入
+	fmt.Println(str)
+	f64, _ := strconv.ParseFloat(str, 64)
+	fmt.Println(f64)
 }

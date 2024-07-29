@@ -51,7 +51,7 @@ func TestRead(t *testing.T) {
 		return
 	}
 	fmt.Println(cell)
-	// 获取 Sheet1 上所有单元格
+	// 获取 Sheet1 上所有单元格 与Rows 一个返回切片 一个返回数组
 	rows, err := f.GetRows("Sheet1")
 	if err != nil {
 		fmt.Println(err)

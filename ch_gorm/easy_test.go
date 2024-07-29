@@ -56,3 +56,22 @@ func TestEasy(t *testing.T) {
 	// // 删除
 	// db.Delete(&u)
 }
+
+// first 和 find 找不到数据 first take last会报错ErrRecordNotFound
+func TestFrist(t *testing.T) {
+	fmt.Println("简单的数据操作")
+	source := "root:citybear@(127.0.0.1:13306)/mydata" // 账号：密码 ip端口 数据库名
+	dsn := fmt.Sprintf("%s?charset=utf8mb4&readTimeout=%ds&writeTimeout=%ds&parseTime=True&loc=Local", source, 3, 3)
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
+		SkipDefaultTransaction: true, // 事务
+	})
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("数据库资源%#v", db)
+
+	var uu UserInfo
+	res := db.Find(&uu, "hobby=?", "足球1")
+	fmt.Println(res.Error)
+	fmt.Println(uu)
+}

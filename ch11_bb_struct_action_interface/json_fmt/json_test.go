@@ -95,12 +95,13 @@ func TestJsonInterface(t *testing.T) {
 
 }
 
+// json字符串 解析int64 float64精度丢失
 func TestDecoder(t *testing.T) {
 	var request = `{"id":7044144249855934983}`
 
 	var test1 interface{}
 
-	_ = json.Unmarshal([]byte(request), &test1)
+	_ = json.Unmarshal([]byte(request), &test1) // 解码
 
 	objStr1, err := json.Marshal(test1) // 进行编码
 	if err != nil {
@@ -115,7 +116,7 @@ func TestDecoder(t *testing.T) {
 	var test interface{}
 	decoder := json.NewDecoder(strings.NewReader(request)) // 从一个流里进行解码
 	decoder.UseNumber()
-	err = decoder.Decode(&test)
+	err = decoder.Decode(&test) // 解码
 	if err != nil {
 		fmt.Println("error:", err)
 	}
@@ -143,4 +144,23 @@ func TestXxx(t *testing.T) {
 		return
 	}
 	fmt.Println(s.Name, s.Age)
+}
+
+// json字符串数组
+func TestXxx2(t *testing.T) {
+	stu := "[{\"Name\":\"zhangsan\",\"aGe\":18},{\"Name\":\"lisi\",\"aGe\":22}]"
+	var s []Student1
+	err := json.Unmarshal([]byte(stu), &s)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	for _, v := range s {
+		fmt.Println(v.Name, v.Age)
+	}
+
+	var unMap []map[string]interface{}
+	err = json.Unmarshal([]byte(stu), &unMap)
+	fmt.Println(unMap)
 }
