@@ -164,3 +164,34 @@ func TestXxx2(t *testing.T) {
 	err = json.Unmarshal([]byte(stu), &unMap)
 	fmt.Println(unMap)
 }
+
+// 标签重名的影响 都不处理该标签字段
+type StudentX struct {
+	Name string `json:"name"`
+	Age  int    `json:"AgE"`
+	Tech string `json:"name"`
+}
+
+func TestR(t *testing.T) {
+	stu := "{\"Name\":\"zhangsan\",\"aGe\":18}"
+	var s StudentX
+	err := json.Unmarshal([]byte(stu), &s)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	t.Logf("%+v", s) // {Name: Age:18 Tech:} 多个重名的name标签导致不知道赋值给哪个都不赋值 {Name:zhangsan Age:18 Tech:}
+
+	d := &StudentX{
+		Name: "cccc",
+		Age:  18,
+		Tech: "ttt",
+	}
+	jStr, err := json.Marshal(d)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	fmt.Println(string(jStr)) // {"AgE":18} 多个重名的name标签导致不知道序列化哪个 都不处理 {name":"cccc","AgE":18,"name1":"ttt"}
+}

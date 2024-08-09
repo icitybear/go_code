@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+	"unicode"
 )
 
 // 拼接
@@ -133,7 +134,7 @@ func TestXxx(t *testing.T) {
 	// j2()
 	// j3()
 	// 5 > 4 >321
-	j5()
+	// j5()
 }
 
 // 字字符串查询
@@ -174,5 +175,27 @@ func TestSplit(t *testing.T) {
 	tmp := strings.Split(str, ",") // tag:就算返回空数组 长度也是1
 	fmt.Printf("tmp is:%+v str_len:%d arr_len:%d \n", tmp, len(str), len(tmp))
 	arr := []string{}
+	// var arr = make([]string, 1)
 	fmt.Printf("arr is:%+v  arr_len:%d \n", arr, len(arr))
+
+	arr1 := []string{}
+	// arr1 := []string{"1", "v2", "", "4"}
+	jnStr := strings.Join(arr1, ",")
+	fmt.Printf("jnStr is:%+v  jnStr_len:%d \n", jnStr, len(jnStr))
+}
+
+// 在Go语言中，字符串本身并不直接支持修改其内部字符（因为字符串在Go中是不可变的），包括将字符串的首字母小写
+func TestUp(t *testing.T) {
+	s1 := "ChiHuo"
+
+	fmt.Println(strings.ToLower(s1)) // 全小写
+
+	s2 := "GOLANG_HHH"
+	r := []rune(s2)
+	if unicode.IsUpper(r[0]) {
+		r[0] = unicode.ToLower(r[0])
+	}
+
+	fmt.Println(string(r)) // 首字母小写
+
 }

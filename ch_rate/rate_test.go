@@ -37,11 +37,13 @@ func process(obj interface{}) (interface{}, error) {
 }
 
 func TestRate(t *testing.T) {
-	limit := rate.Limit(5)                   // QPS：50 基础速率
-	burst := 25                              // 桶容量25
+	// num := rate.Every(time.Millisecond * 5)
+	num := 5
+	limit := rate.Limit(num)                 // QPS：50 基础速率
+	burst := 300                             // 桶容量25
 	limiter := rate.NewLimiter(limit, burst) // 1. 初始化一个令牌生成速率为limit，容量为burst的令牌桶
 
-	size := 50 // 数据量500
+	size := 500 // 数据量500
 	data := generateData(size)
 
 	var wg sync.WaitGroup // 工作组锁
@@ -50,10 +52,12 @@ func TestRate(t *testing.T) {
 		wg.Add(1)
 		go func(idx int, obj int) {
 			defer wg.Done()
+			t.Logf("idx:%d, start: %v", idx, time.Now().Format("2006-01-02 15:04:05.000"))
 			// 2. Wait拿到令牌
 			if err := limiter.Wait(context.Background()); err != nil {
 				t.Logf("[%d] [EXCEPTION] wait err: %v", idx, err)
 			}
+			t.Logf("idx:%d, End: %v", idx, time.Now().Format("2006-01-02 15:04:05.000"))
 			// 执行业务逻辑
 			processed, err := process(obj)
 			if err != nil {
@@ -71,25 +75,29 @@ func TestRate(t *testing.T) {
 
 func TestTimeRate(t *testing.T) {
 
-	limiter := rate.NewLimiter(10, 100) // 1. 初始化一个令牌生成速率为limit，容量为burst的令牌桶
-
-	timer := time.NewTimer(time.Second * 10) // 定时器
-	quit := make(chan struct{})              // 通道
+	num := rate.Every(time.Millisecond * 100) // 0.1=>每秒10个 100写成500每秒50个
+	// num := rate.Limit(10)                // 10=>0.1（每秒10个） 20 => 0.2
+	limiter := rate.NewLimiter(num, 5) // 1. 初始化一个令牌生成速率为limit，容量为burst的令牌桶
+	// tag:容量为burst容量一开始就满了，然后下个时间频率继续产令牌
+	timer := time.NewTimer(time.Second * 3) // 定时器 5秒的定时器 5s后通道收到消息
+	quit := make(chan struct{})             // 通道
 	defer timer.Stop()
 	go func() {
-		<-timer.C   // 定时器到期
+		<-timer.C   // 定时器到期 定时器收到消息
 		close(quit) // 通知子协程都关闭
 	}()
 
 	var allowed, denied int32
 	var wait sync.WaitGroup
 	cpuNum := runtime.NumCPU()
-	fmt.Println(cpuNum)
+	fmt.Println(cpuNum) // 8核
+
 	for i := 0; i < cpuNum; i++ {
 		wait.Add(1)
 		go func() {
 			for {
 				select {
+				// 接收外部关闭消息
 				case <-quit:
 					wait.Done()
 					return
@@ -98,8 +106,12 @@ func TestTimeRate(t *testing.T) {
 					// 2. Wait拿到令牌
 					err := limiter.Wait(ctx)
 					if err == nil {
+						t.Logf("获取到令牌: allowed %v, Time: %v", allowed, time.Now().Format("2006-01-02 15:04:05.000")) //打印每个抢到的时间
 						atomic.AddInt32(&allowed, 1)
 					} else {
+						// ctx设置1秒超时 1s都有1万次 rate: Wait(n=1) would exceed context deadline
+						// 如果令牌产生太慢就会有N个这日志
+						t.Logf("未获取到令牌:denied %v, Time: %v, err: %s", denied, time.Now().Format("2006-01-02 15:04:05.000"), err.Error())
 						fmt.Println(err)
 						atomic.AddInt32(&denied, 1)
 					}

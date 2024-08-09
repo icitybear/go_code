@@ -1,6 +1,9 @@
 package operator_test
 
-import "testing"
+import (
+	"math"
+	"testing"
+)
 
 const (
 	Readable = 1 << iota
@@ -40,4 +43,13 @@ func TestJisuan(t *testing.T) {
 	t.Log(a)
 	b := float32(710) / float32(100)
 	t.Log(b)
+	c := float64(710) / 100
+	t.Log(c)
+}
+
+func TestJisuan2(t *testing.T) {
+	count := 430
+	pageSize := 100
+	res := math.Ceil(float64(count) / float64(pageSize))
+	t.Log(res)
 }
