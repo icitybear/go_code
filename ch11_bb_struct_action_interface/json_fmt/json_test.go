@@ -195,3 +195,109 @@ func TestR(t *testing.T) {
 
 	fmt.Println(string(jStr)) // {"AgE":18} 多个重名的name标签导致不知道序列化哪个 都不处理 {name":"cccc","AgE":18,"name1":"ttt"}
 }
+
+type Person struct {
+	ID   uint
+	Name string
+	address
+}
+
+type Person2 struct {
+	ID      uint
+	Name    string
+	Address address
+}
+
+type address struct {
+	Code   int
+	Street string
+}
+
+func TestMarshalPerson(t *testing.T) {
+	p := Person{
+		ID:   1,
+		Name: "Bruce",
+		address: address{ // 小写的成员，地址结构
+			Code:   100,
+			Street: "Main St",
+		},
+	}
+	p2 := Person2{
+		ID:   1,
+		Name: "Bruce",
+		Address: address{ // 小写的成员，地址结构
+			Code:   100,
+			Street: "Main St",
+		},
+	}
+
+	fmt.Println(p.Code, p.Street)                   // 1. 组合结构体时 直接通过 Person 访问地址成员时的感觉，即地址成员似乎直接成为了 Person 的成员
+	fmt.Println(p2.Address.Code, p2.Address.Street) // 100 Main St
+	output, _ := json.MarshalIndent(p, "", "  ")    // 美化输出
+	println(string(output))
+	output2, _ := json.MarshalIndent(p2, "", "  ") // 输出没有扁平化
+	println(string(output2))
+}
+
+// 序列化的结果也扁平化
+// {
+//   "ID": 1,
+//   "Name": "Bruce",
+//   "Code": 100,
+//   "Street": "Main St"
+// }
+// 输出没有扁平化
+// {
+//   "ID": 1,
+//   "Name": "Bruce",
+//   "Address": {
+//     "Code": 100,
+//     "Street": "Main St"
+//   }
+// }
+
+func TestUnmarshalPerson(t *testing.T) {
+	str := `{"ID":1,"Name":"Bruce","address":{"Code":100,"Street":"Main St"}}`
+	// 本质 嵌入式的结构体里成员就相当于提到最外层了
+	var p Person
+	_ = json.Unmarshal([]byte(str), &p)                             // 3. 反序列化时，私有组合对象的公共成员又不被解析
+	fmt.Printf("%+v\n", p)                                          // {ID:1 Name:Bruce address:{Code:0 Street:}}
+	str1 := `{"ID":1,"Name":"Bruce","Code":100,"Street":"Main St"}` // 4. 扁平化的反而能识别到成员变量 反序列化时，私有组合对象的公共成员要这样才能被解析
+	_ = json.Unmarshal([]byte(str1), &p)
+	fmt.Printf("%+v\n", p) // {ID:1 Name:Bruce address:{Code:100 Street:Main St}}
+
+	// 5. "address" 与 "Address" 无区别 因为不区分大小写
+	strNew := `{"ID":1,"Name":"Bruce","address":{"Code":100,"Street":"Main St"}}`
+	// strNew := `{"ID":1,"Name":"Bruce","Address":{"Code":100,"Street":"Main St"}}`
+	// strNew := `{"ID":1,"Name":"Bruce","Code":100,"Street":"Main St"}` // 6. 反序列化结果 ID:1 Name:Bruce Address:{Code:0 Street:}
+	var p2 Person2
+	_ = json.Unmarshal([]byte(strNew), &p2)
+	fmt.Printf("%+v\n", p2) // {ID:1 Name:Bruce Address:{Code:100 Street:Main St}}
+}
+
+type Person3 struct {
+	ID   int
+	Name string
+	Age  *int
+}
+
+func TestFoo(t *testing.T) {
+
+	p := Person3{
+		ID:   1,
+		Name: "Bruce",
+		Age:  new(int),
+	}
+	*p.Age = 20
+	fmt.Println(p)
+	// 如果p := &Person{} ,这里就是p.Age = 20
+
+	p2 := &Person3{
+		ID:   1,
+		Name: "HHH",
+	}
+	// &{1 HHH <nil>}
+
+	p2.Age = new(int) // &{1 HHH 0x14000020230}
+	fmt.Println(p2)
+}

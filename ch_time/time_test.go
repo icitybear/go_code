@@ -66,3 +66,27 @@ func TestFormat(t *testing.T) {
 	}
 	fmt.Println("after")
 }
+
+func TestTimer(t *testing.T) {
+	ch := make(chan int)
+	// 起协程
+	go func() {
+		// 1. for + select 持续监听
+		for {
+			// 2. select可以完成监控多个channel的状态, 不同channel 收到消息执行顺序与case无关 如果都没收到 就默认走default
+			select {
+			case num := <-ch: // 外层是1秒就发一次 无缓冲区
+				fmt.Println("get num is ", num)
+			case <-time.After(2 * time.Second): // 每次都是新的2秒定时。
+				// 3. 每次调用 time.After 都会创建一个新的计时器, 底层的计时器在计时器被触发之前不会被垃圾收集器回收。存在内存泄漏的可能
+				fmt.Println("time's up!!!")
+				// 如果都没收到 就默认走default 如果没有 default 子句,select 将阻塞,直到某个通道可以运行;
+			}
+		}
+	}()
+
+	for i := 0; i < 5; i++ {
+		ch <- i
+		time.Sleep(1 * time.Second)
+	}
+}
