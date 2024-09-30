@@ -21,6 +21,17 @@ func TestArr(t *testing.T) {
 	t.Logf("c %T %+v", c, c)
 	d := b[:1]
 	t.Logf("d %T %+v", d, d)
+
+	var f []int
+	e := [...]int{1, 2, 3, 4, 5, 6}
+	t.Log(len(e))
+	if len(e) > 4 {
+		f = e[:len(e)] // 超过界限了
+	} else {
+		f = e[:1] // 超过界限了
+	}
+
+	t.Logf("f %T %+v", f, f)
 }
 
 func TestArrayEqual(t *testing.T) {
