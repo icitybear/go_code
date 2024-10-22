@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 	"unicode"
+	"unicode/utf8"
 )
 
 // 拼接
@@ -55,6 +56,11 @@ func TestHas(t *testing.T) {
 	if strings.HasSuffix(s1, "golang") {
 		fmt.Printf("%s has suffix golang\n", s1)
 	}
+
+	// str := "外拍-沈铭炜-剧情-四月底wh2桃子0501-男用户-穿的很特别-翻剪-镜像二创-他趣"
+	str := "web.business.image/202410085d0dbb6ef08fd6a64ab986e"
+	fmt.Println(len(str))
+	fmt.Println((utf8.RuneCountInString(str)))
 }
 
 // 子字符串 直接通过切片下表获取 因为字符船 是不可改变的值类型 又是 []types

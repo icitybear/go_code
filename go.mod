@@ -28,6 +28,7 @@ require (
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/duke-git/lancet/v2 v2.3.0
+	github.com/flike/kingshard v0.0.0-20240517234628-a15add435e15
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/golang/protobuf v1.5.3
 	github.com/google/uuid v1.6.0

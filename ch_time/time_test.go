@@ -67,6 +67,19 @@ func TestFormat(t *testing.T) {
 	fmt.Println("after")
 }
 
+func TestFormatTrans(t *testing.T) {
+
+	statDateTime := time.Now()
+	str := statDateTime.Format("2006/01/02 00:00:00")
+	fmt.Println(str)
+
+	// 先转瞬逝时间再使用格式化
+	str1 := "2024-06-07"                                                   // 默认是0点
+	parsedTime1, _ := time.ParseInLocation("2006-01-02", str1, time.Local) // 2个参数都格式都要一一对上 0001-01-01 00:00:00 +0000 UTC
+	transStr := parsedTime1.Format("20060102")
+	fmt.Println(transStr)
+}
+
 func TestTimer(t *testing.T) {
 	ch := make(chan int)
 	// 起协程
