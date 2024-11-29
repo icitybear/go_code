@@ -26,6 +26,7 @@ require (
 )
 
 require (
+	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/duke-git/lancet/v2 v2.3.0
 	github.com/flike/kingshard v0.0.0-20240517234628-a15add435e15
@@ -45,6 +46,7 @@ require (
 	github.com/rs/xid v1.5.0
 	github.com/rs/zerolog v1.31.0
 	github.com/satori/go.uuid v1.2.0
+	github.com/shopspring/decimal v1.4.0
 	github.com/smartystreets/assertions v1.2.0 // indirect
 	github.com/spaolacci/murmur3 v1.1.0
 	github.com/xuri/efp v0.0.0-20230802181842-ad255f2331ca // indirect

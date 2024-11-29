@@ -2,7 +2,10 @@ package array_test
 
 import (
 	"fmt"
+	"strconv"
 	"testing"
+
+	"github.com/shopspring/decimal"
 )
 
 // 数组是固定长度的、同一类型的数据集合
@@ -100,3 +103,38 @@ func TestArraySection(t *testing.T) {
 // 值类型，作为参数传递到函数时，传递的是数组的值拷贝，也就是说，会先将数组拷贝给形参，然后在函数体中引用的是形参而不是原来的数组，当我们在函数中对数组元素进行修改时，并不会影响原来的数组
 
 // 需要一个引用类型的、支持动态添加元素的新「数组」类型- 切片类型
+
+func TestAoti(t *testing.T) {
+	str := "7431820065157906458"
+	s, _ := strconv.Atoi(str)
+	fmt.Println(s)
+
+	floatNum := 7.431820065157906e+18
+	strNum := strconv.FormatFloat(floatNum, 'f', 15, 64) // 'f' 表示没有指数部分，保留15位小数
+	fmt.Println(strNum)
+	strNum1 := strconv.FormatFloat(floatNum, 'f', -1, 64) // 'f' 表示没有指数部分，保留15位小数
+	fmt.Println(strNum1)
+
+	num, _ := strconv.ParseFloat(fmt.Sprintf("%.8f", floatNum), 64)
+	fmt.Println(num) // 输出原始的 float64 数值
+
+	// 使用 decimal.NewFromFloat 创建一个 decimal.Decimal 实例
+	decimalValue := decimal.NewFromFloat(num)
+	// 乘以 100，使用 decimal 的 Mul 方法
+	decimalValue = decimalValue.Mul(decimal.NewFromInt(100))
+
+	// 将结果转换回 float64
+	res, _ := decimalValue.Float64()
+	fmt.Println(res) // 输出结果，应该为
+
+	// "7431820065157906458"
+	d, _ := decimal.NewFromString(strNum1)
+	fmt.Println(d)
+	fmt.Println(d.String())
+	res2, _ := d.Float64()
+	fmt.Println(strconv.FormatFloat(res2, 'f', -1, 64))
+
+	num1 := 7431820065157906458
+	num1str := strconv.FormatInt(int64(num1), 10)
+	fmt.Println(num1str)
+}

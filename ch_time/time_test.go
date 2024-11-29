@@ -29,7 +29,7 @@ func TestParse(t *testing.T) {
 }
 
 func TestBet(t *testing.T) {
-	startDateTime, _ := time.Parse("2006-01-02", "2024-06-04")
+	startDateTime, _ := time.Parse("2006-01-02", "2024-06-03")
 	endDateTime, _ := time.Parse("2006-01-02", "2024-06-05")
 	i := 0
 	for {
@@ -65,6 +65,27 @@ func TestFormat(t *testing.T) {
 		return
 	}
 	fmt.Println("after")
+}
+
+func TestFormatT(t *testing.T) {
+
+	loc, _ := time.LoadLocation("Local") // 不能写成local小写 会报错
+
+	t1, err := time.ParseInLocation("2006-01-02", "2024-11-07", loc)
+
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println(t1.Unix())
+
+	// 将时间戳转换为 time.Time 类型
+	timestamp := int64(1731398862)
+	t2 := time.Unix(timestamp, 0)
+
+	// 将时间转换为指定格式的日期字符串
+	dateString := t2.Format("2006-01-02 15:03:04")
+
+	fmt.Println(dateString, t2.Unix())
 }
 
 func TestFormatTrans(t *testing.T) {

@@ -158,6 +158,50 @@ func camelToUnderscore(s string) string {
 	return builder.String()
 }
 
+func UnderscoreToCamel(s string) string {
+	var builder strings.Builder
+	upperNext := false
+	for _, r := range s {
+		if r == '_' {
+			upperNext = true
+		} else {
+			if upperNext {
+				builder.WriteRune(unicode.ToUpper(r))
+				upperNext = false
+			} else {
+				builder.WriteRune(r)
+			}
+		}
+	}
+
+	return builder.String()
+}
+
+func UnderscoreToCamel2(s string) string {
+	var builder strings.Builder
+	upperNext := false
+	firstLetter := true
+	for _, r := range s {
+		if r == '_' {
+			upperNext = true
+		} else {
+			if upperNext {
+				builder.WriteRune(unicode.ToUpper(r))
+				upperNext = false
+			} else {
+				if firstLetter {
+					builder.WriteRune(unicode.ToUpper(r))
+					firstLetter = false
+				} else {
+					builder.WriteRune(r)
+				}
+			}
+		}
+	}
+
+	return builder.String()
+}
+
 // 拼音包
 func Test4(t *testing.T) {
 	//camelCaseStr := "helloWorld"
@@ -165,12 +209,14 @@ func Test4(t *testing.T) {
 	//camelCaseStr := "hello"
 	//camelCaseStr := "你好helloWorld世界"
 
-	camelCaseStr := "hel23loWorld"                   // Hel23loWorld
-	underscoreStr := camelToUnderscore(camelCaseStr) // hel23lo_world
-	// 所以 Id =>id ID =>id   连续的大写字母 默认一个驼峰
-	underscoreStr = camelToUnderscore("hellOWorld") // hell_oworld
+	camelCaseStr := "Hel23loWorld" // Hel23loWorld
+	fmt.Println(camelToUnderscore(camelCaseStr))
 
-	fmt.Println(underscoreStr)
+	// Id =>id  ID =>id   连续的大写字母 默认一个驼峰
+	fmt.Println(camelToUnderscore("hellOWorld")) // hell_oworld
+
+	fmt.Println(UnderscoreToCamel("hell_oworld")) // hellOworld 不会考虑连续大写字母的情况
+	fmt.Println(UnderscoreToCamel2("hell_oworld"))
 }
 
 func Test5(t *testing.T) {

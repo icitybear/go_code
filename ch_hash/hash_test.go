@@ -6,6 +6,8 @@ import (
 	"errors"
 	"fmt"
 	"hash/crc32"
+	"io/ioutil"
+	"os"
 	"strconv"
 	"strings"
 	"testing"
@@ -70,6 +72,44 @@ func TestMd5(t *testing.T) {
 	h1.Write([]byte(strings.ToUpper(str))) // 转大写后加密值就不一样了 有区分大小写
 	m1 := hex.EncodeToString(h1.Sum(nil))
 	println(m1)
+}
+
+// 图片,视频md5
+func TestMd51(t *testing.T) {
+	// f, err := http.Get(filePath)
+	// if err != nil {
+	// 	log.Context(t.ctx).Warnf("DoSync os read file err :%+v", err)
+	// 	return "", err
+	// }
+	// byt, _ := io.ReadAll(f.Body)
+
+	inputFile := "./测试图片素材.jpeg" // 9a669bd5204056f06b176f63b3aee2f2
+	buf, err := ioutil.ReadFile(inputFile)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "File Error: %s\n", err)
+		// panic(err.Error())
+	}
+	// buf := []byte("") // d41d8cd98f00b204e9800998ecf8427e
+	h := md5.New()
+	h.Write(buf)
+	m := hex.EncodeToString(h.Sum(nil)) // 空值 d41d8cd98f00b204e9800998ecf8427e
+	println(m)
+}
+
+func TestMd52(t *testing.T) {
+
+	// inputFile := "./测试视频素材.mp4"
+	inputFile := "./1729779605520Q4liin2jXy"
+	buf, err := ioutil.ReadFile(inputFile)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "File Error: %s\n", err)
+		panic(err.Error())
+	}
+
+	h := md5.New()
+	h.Write(buf)
+	m := hex.EncodeToString(h.Sum(nil)) // ce5eb56af670473a782a5ad642fa9311
+	println(m)
 }
 
 func TestHash32(t *testing.T) {

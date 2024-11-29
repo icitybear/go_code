@@ -102,7 +102,15 @@ func j3() {
 	s1 := "chihuo"
 	s2 := "golang"
 	s3 := strings.Join([]string{s1, s2}, "@")
-	fmt.Printf("s1 + s2 = %s\n", s3)
+	fmt.Printf("s1 + s2 = %s len:%d\n", s3, len(s3))
+
+	var str []string
+	s4 := strings.Join(str, "@")
+	fmt.Printf("s4 = %s len:%d\n", s4, len(s4))
+
+	str1 := []string{}
+	s5 := strings.Join(str1, "@")
+	fmt.Printf("s5 = %s len:%d\n", s5, len(s5))
 }
 
 // bytes.Buffer
@@ -138,7 +146,7 @@ func TestXxx(t *testing.T) {
 	// 一次性执行完毕的流程 用+ fmt都无所谓，循环脚本，后台挂起的还是用效率高的
 	// j1()
 	// j2()
-	// j3()
+	j3()
 	// 5 > 4 >321
 	// j5()
 }
@@ -177,7 +185,8 @@ func TestFmt(t *testing.T) {
 }
 
 func TestSplit(t *testing.T) {
-	str := "1,"
+	// str := "1,"
+	str := ""
 	tmp := strings.Split(str, ",") // tag:就算返回空数组 长度也是1
 	fmt.Printf("tmp is:%+v str_len:%d arr_len:%d \n", tmp, len(str), len(tmp))
 	arr := []string{}
@@ -188,6 +197,22 @@ func TestSplit(t *testing.T) {
 	// arr1 := []string{"1", "v2", "", "4"}
 	jnStr := strings.Join(arr1, ",")
 	fmt.Printf("jnStr is:%+v  jnStr_len:%d \n", jnStr, len(jnStr))
+}
+
+func TestJoin(t *testing.T) {
+	arr := []int{1, 2, 3, 4, 5}
+	str := ","
+	var strArr []string
+	for _, v := range arr {
+		strArr = append(strArr, fmt.Sprintf("%d", v))
+		// strArr = append(strArr, fmt.Sprintf("'%d'", v)) 特殊写法
+	}
+	res := strings.Join(strArr, str)
+	fmt.Println(res)
+
+	strArr1 := []string{"taqu", "miyou", "4"}
+	res1 := strings.Join(strArr1, str)
+	fmt.Println(res1)
 }
 
 // 在Go语言中，字符串本身并不直接支持修改其内部字符（因为字符串在Go中是不可变的），包括将字符串的首字母小写
