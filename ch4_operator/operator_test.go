@@ -48,7 +48,7 @@ func TestJisuan(t *testing.T) {
 }
 
 func TestJisuan2(t *testing.T) {
-	count := 430
+	count := 90
 	pageSize := 100
 	res := math.Ceil(float64(count) / float64(pageSize))
 	t.Log(res)

@@ -102,6 +102,11 @@ func TestTime(t *testing.T) {
 
 	formattedString := ti.Format("20060102") // 所需的字符串格式
 	fmt.Println(formattedString)
+
+	str1 := "IMAGE_TYPE_BMP"
+	// str1 := "IMAGE_TYPE_TIFF_INTEL"
+	res := strings.Split(str1, "_")
+	fmt.Printf("%#v,%#v", res[2], res[len(res)-1])
 }
 
 func TestTime2(t *testing.T) {

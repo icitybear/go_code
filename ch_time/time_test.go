@@ -29,8 +29,8 @@ func TestParse(t *testing.T) {
 }
 
 func TestBet(t *testing.T) {
-	startDateTime, _ := time.Parse("2006-01-02", "2024-06-03")
-	endDateTime, _ := time.Parse("2006-01-02", "2024-06-05")
+	startDateTime, _ := time.Parse("2006-01-02", "2024-12-30")
+	endDateTime, _ := time.Parse("2006-01-02", "2025-01-02")
 	i := 0
 	for {
 		statDateTime := startDateTime.AddDate(0, 0, i)

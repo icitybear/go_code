@@ -46,17 +46,25 @@ func TestOrder(t *testing.T) {
 func deferFunc() {
 	fmt.Println("defer func called...")
 	testInt = 1
+	fmt.Printf("defer func called...testInt:%d\n", testInt)
 }
 
 func returnFunc() int {
 	fmt.Println("return func called...")
 	testInt = 2
+	fmt.Printf("return func called...testInt:%d\n", testInt)
 	return testInt
 }
 
-// return之后的语句先执⾏，defer后的语句后执⾏
+// return之后的语句先执⾏（返回值已经记录了，后续defer里再更改不会影响），defer后的语句后执⾏
 func returnAndDeferFunc() int {
 	defer deferFunc()
 
 	return returnFunc()
 }
+
+// return func called...
+// return func called...testInt:2    return先接收返回值2 保存下来了
+// defer func called...
+// defer func called...testInt:1
+// 2 return后续的defer 影响不到已保存的返回值

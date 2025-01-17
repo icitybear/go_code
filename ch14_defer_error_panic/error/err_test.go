@@ -81,3 +81,54 @@ func GetFibonacci2(str string) {
 	fmt.Println(list)
 
 }
+
+var BaseErr = errors.New("the underlying base error")
+
+func TestErrWrap(t *testing.T) {
+	err1 := fmt.Errorf("wrap base: %w", BaseErr)
+	fmt.Println(err1)
+	err2 := fmt.Errorf("wrap err1: %w", err1) // %w 返回 wrapError类型
+	fmt.Println(err2)
+}
+
+// 打印结果：
+// wrap base: the underlying base error
+// wrap err1: wrap base: the underlying base error
+
+func TestErrIs(t *testing.T) {
+	err1 := fmt.Errorf("wrap base: %w", BaseErr)
+	err2 := fmt.Errorf("wrap err1: %w", err1)
+	println(err2 == BaseErr) // false
+	if !errors.Is(err2, BaseErr) {
+		panic("err2 is not BaseErr")
+	}
+	println("err2 is BaseErr")
+}
+
+// 打印结果：
+// false
+// err2 is BaseErr
+
+type TypicalErr struct {
+	e string
+}
+
+func (t TypicalErr) Error() string {
+	return t.e
+}
+
+func TestErrAs(t *testing.T) {
+	err := TypicalErr{"typical error"}
+	err1 := fmt.Errorf("wrap err: %w", err)
+	err2 := fmt.Errorf("wrap err1: %w", err1)
+	var e TypicalErr
+	if !errors.As(err2, &e) {
+		panic("TypicalErr is not on the chain of err2")
+	}
+	println("TypicalErr is on the chain of err2")
+	println(err == e)
+}
+
+// 打印结果：
+// TypicalErr is on the chain of err2
+// true

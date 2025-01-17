@@ -99,7 +99,11 @@ func TestMd51(t *testing.T) {
 func TestMd52(t *testing.T) {
 
 	// inputFile := "./测试视频素材.mp4"
-	inputFile := "./1729779605520Q4liin2jXy"
+	// inputFile := "./1729779605520Q4liin2jXy" // ce5eb56af670473a782a5ad642fa9311
+	// inputFile := "./before1.png" // 201a599f5325b2faed17e108fd8633bd
+	// inputFile := "./qqdeal1.png" // 201a599f5325b2faed17e108fd8633bd 与媒体侧一致
+	// inputFile := "他趣134-薛.0906(1).mp4" // 436ab4e1b68497932d86cd67ab708abd
+	inputFile := "cpa网关链路.jpeg" // 29c863b0b91487475cdfbaa32301b4fe
 	buf, err := ioutil.ReadFile(inputFile)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "File Error: %s\n", err)
@@ -108,7 +112,7 @@ func TestMd52(t *testing.T) {
 
 	h := md5.New()
 	h.Write(buf)
-	m := hex.EncodeToString(h.Sum(nil)) // ce5eb56af670473a782a5ad642fa9311
+	m := hex.EncodeToString(h.Sum(nil)) //
 	println(m)
 }
 

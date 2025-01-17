@@ -3,6 +3,7 @@ package string_test
 import (
 	"bytes"
 	"fmt"
+	"regexp"
 	"strconv"
 	"strings"
 	"testing"
@@ -229,4 +230,64 @@ func TestUp(t *testing.T) {
 
 	fmt.Println(string(r)) // 首字母小写
 
+}
+
+// parsingUa 解析用户代理字符串，提取操作系统、WebKit版本和移动设备标识
+func parsingUa(ua string) map[string]string {
+	// 同时匹配多种结果 匹配到任意一个就是有结果
+	matchRegex := map[string]*regexp.Regexp{
+		"os":     regexp.MustCompile(`CPU iPhone OS ([0-9_])* like Mac OS X`), // 正则表达式用于匹配操作系统
+		"webkit": regexp.MustCompile(`AppleWebKit.[\d\.]*`),                   // 正则表达式用于匹配WebKit版本
+		"mobile": regexp.MustCompile(`Mobile\/([\dA-Z]*)`),                    // 正则表达式用于匹配移动设备标识
+	}
+
+	matchResult := make(map[string]string)
+
+	for key, regex := range matchRegex {
+		matches := regex.FindStringSubmatch(ua) // 查找匹配项
+		// 匹配到才有第一个元素
+		if len(matches) > 0 {
+			matchResult[key] = matches[0]                     // 将匹配结果添加到结果映射中 mobile Mobile/16D57
+			tmpKey := fmt.Sprintf("%s-%d", key, len(matches)) // 就算有多个也只匹配到第一个
+			matchResult[tmpKey] = matches[1]                  // mobile-1 16D57
+		}
+	}
+
+	return matchResult
+}
+
+func TestRegex(t *testing.T) {
+	// 示例用户代理字符串
+	// userAgent := "Mozilla/5.0 (iPhone; CPU iPhone OS 12_1_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/16D57"
+
+	userAgent := "Mozilla/5.0 Mobile/16D57"
+	// userAgent := "Mobile/16D57 Mozilla/5.0 Mobile/16D58" // 就算有多个也只匹配到第一个
+	// 解析用户代理
+	result := parsingUa(userAgent)
+
+	// 打印结果
+	for key, value := range result {
+		println(key, value)
+	}
+}
+
+func TestRegex2(t *testing.T) {
+	// str := "xxx-xxx-xxx-xxx-[xxx1]"
+	str := "他趣-广点通-达人一口价-[非荷-[xcxx]尔蒙]-口播-[一手]-玉莹-xxxx"
+	pattern := `-\[(.*)\]-?`
+	// .* 非荷-[xcxx
+	// .*? 非荷-[xcxx]尔蒙
+
+	re, err := regexp.Compile(pattern)
+	if err != nil {
+		fmt.Printf("正则表达式编译错误: %v\n", err)
+		return
+	}
+
+	matches := re.FindStringSubmatch(str)
+	if len(matches) > 1 {
+		fmt.Printf("匹配到的内容: %s\n", matches[1])
+	} else {
+		fmt.Println("没有匹配到内容")
+	}
 }

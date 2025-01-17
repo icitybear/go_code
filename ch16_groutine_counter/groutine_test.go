@@ -23,6 +23,8 @@ func TestGroutine(t *testing.T) {
 		// go func() {
 		// 	fmt.Println(i) // 打印的时候i已经循环到20了
 		// }()
+
+		// 竞争关系 尤其是for循环结构体指针
 	}
 
 	time.Sleep(time.Millisecond * 100) //加这个是因为 外面执行完的速度 超过了协程 这样就没输出了
@@ -96,3 +98,63 @@ func TestGroutine3(t *testing.T) {
 // Communicating Sequential Processes 中提出的，在 CSP 系统中，所有的并发操作都是通过独立线程以异步运行的方式来实现的。
 // 这些线程必须通过在彼此之间发送消息，从而向另一个线程请求信息或者将信息提供给另一个线程。
 // Go语言中的goroutine和channel机制就是基于CSP模型实现的
+
+type MsgData struct {
+	ID  int
+	Msg string
+}
+
+func TestJZ(t *testing.T) {
+
+	// 先造下数据
+	resSlice := make([]*MsgData, 0)
+	for i := 0; i < 10; i++ {
+		resSlice = append(resSlice, &MsgData{ID: i, Msg: fmt.Sprintf("hello:%d", i)})
+	}
+	wg := sync.WaitGroup{}
+	for pos, v := range resSlice {
+
+		wg.Add(1)
+		// 竞争关系 尤其是for循环结构体指针
+		// go func(pos int) {
+		// 	fmt.Println(pos) // 协程执行打印输出也是无序的 竞争关系 pos也要先复制给临时变量，不然是同一个变量，最后一个
+		// 	v.ID = pos + 100 // 直接使用v修改成员属性，只会改最后一个
+		// 	wg.Done()
+		// }(pos)
+
+		tmpPos := pos
+		go func(item *MsgData) {
+			fmt.Println(tmpPos)
+			item.ID = tmpPos + 100 // 只要结构体指针 也先赋值给临时变量，也不会收到竞争影响
+			item.Msg = fmt.Sprintf("jz:%d", item.ID)
+			wg.Done()
+		}(v)
+	}
+
+	wg.Wait()
+	for pos, v := range resSlice {
+		fmt.Printf("pos:%d, v:%+v\n", pos, v)
+	}
+}
+
+// pos:0, v:&{ID:0 Msg:hello:0}
+// pos:1, v:&{ID:1 Msg:hello:1}
+// pos:2, v:&{ID:2 Msg:hello:2}
+// pos:3, v:&{ID:3 Msg:hello:3}
+// pos:4, v:&{ID:4 Msg:hello:4}
+// pos:5, v:&{ID:5 Msg:hello:5}
+// pos:6, v:&{ID:6 Msg:hello:6}
+// pos:7, v:&{ID:7 Msg:hello:7}
+// pos:8, v:&{ID:8 Msg:hello:8}
+// pos:9, v:&{ID:106 Msg:hello:9}
+
+// pos:0, v:&{ID:100 Msg:jz:100}
+// pos:1, v:&{ID:101 Msg:jz:101}
+// pos:2, v:&{ID:102 Msg:jz:102}
+// pos:3, v:&{ID:103 Msg:jz:103}
+// pos:4, v:&{ID:104 Msg:jz:104}
+// pos:5, v:&{ID:105 Msg:jz:105}
+// pos:6, v:&{ID:106 Msg:jz:106}
+// pos:7, v:&{ID:107 Msg:jz:107}
+// pos:8, v:&{ID:108 Msg:jz:108}
+// pos:9, v:&{ID:109 Msg:jz:109}
