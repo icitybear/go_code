@@ -88,6 +88,27 @@ func TestFormatT(t *testing.T) {
 	fmt.Println(dateString, t2.Unix())
 }
 
+func TestToday(t *testing.T) {
+	startDate := "2025-02-11"
+	// 解析日期字符串
+	parsedDate, _ := time.Parse("2006-01-02", startDate)
+	// 获取当前日期（去掉时间部分）
+	today := time.Now().Truncate(24 * time.Hour) // 因为这种方式无法准确地将时间截取到当天的日期。
+	// 正确的方法是通过比较日期的年、月、日部分来判断是否为同一天。
+	if parsedDate == today {
+		fmt.Println(today)
+	} else {
+		fmt.Println("非当日")
+	}
+	now := time.Now()
+	if parsedDate.Year() == now.Year() &&
+		parsedDate.Month() == now.Month() &&
+		parsedDate.Day() == now.Day() {
+		fmt.Println(now)
+	} else {
+		fmt.Println("非当日2")
+	}
+}
 func TestFormatTrans(t *testing.T) {
 
 	statDateTime := time.Now()

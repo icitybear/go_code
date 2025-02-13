@@ -86,9 +86,11 @@ var BaseErr = errors.New("the underlying base error")
 
 func TestErrWrap(t *testing.T) {
 	err1 := fmt.Errorf("wrap base: %w", BaseErr)
-	fmt.Println(err1)
-	err2 := fmt.Errorf("wrap err1: %w", err1) // %w 返回 wrapError类型
-	fmt.Println(err2)
+	fmt.Println(err1)                          // wrap base: the underlying base error
+	err2 := fmt.Errorf("wrap err1: %w", err1)  // %w 返回 wrapError类型
+	fmt.Println(err2)                          // wrap err1: wrap base: the underlying base error
+	err3 := fmt.Errorf("wrap err3: %+v", err1) // %w 返回 wrapError类型
+	fmt.Println(err3)                          // wrap err3: wrap base: the underlying base error
 }
 
 // 打印结果：
