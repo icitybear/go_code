@@ -7,6 +7,7 @@ import (
 	"gorm.io/driver/mysql"
 
 	"gorm.io/gorm"
+	"gorm.io/hints"
 )
 
 type Category struct {
@@ -274,4 +275,26 @@ func TestMain6(t *testing.T) {
 		panic(err)
 	}
 	getPostsWithJoin(db)
+}
+
+func TestHint(t *testing.T) {
+	db, err := setupDatabase()
+	if err != nil {
+		panic(err)
+	}
+	var uu Category
+	// .Hint undefined (type *gorm.DB has no field or method Hint //
+	// res := db.Hint("FORCE INDEX(idx_code_status)").Find(&uu, "code=?", "code2") // 报错
+	// res := db.Find(&uu, "code=?", "code2")
+	// https://learnku.com/docs/gorm/v2/hints/9769
+	res := db.Debug().Clauses(hints.ForceIndex("idx_code_status")).Find(&uu, "code=?", "code2")
+
+	fmt.Println(res.Error)
+	fmt.Println(uu)
+
+	// 未报错 正确
+	var ct []Category
+	db.Debug().Raw("SELECT * FROM categorys FORCE INDEX (idx_code_status) WHERE code = ?", "code2").Scan(&ct)
+	fmt.Println(ct)
+
 }
