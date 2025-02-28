@@ -100,6 +100,9 @@ func j2() {
 
 // strings.Join
 func j3() {
+	s0 := strings.Join([]string{}, ",")
+	fmt.Println(len(s0), s0)
+
 	s1 := "chihuo"
 	s2 := "golang"
 	s3 := strings.Join([]string{s1, s2}, "@")
@@ -290,4 +293,35 @@ func TestRegex2(t *testing.T) {
 	} else {
 		fmt.Println("没有匹配到内容")
 	}
+}
+
+// func MustCompile(str string) *Regexp {
+// 	regexp, err := Compile(str)
+// 	if err != nil {
+// 		panic(`regexp: Compile(` + quote(str) + `): ` + err.Error())
+// 	}
+// 	return regexp
+// }
+
+func TestRegex3(t *testing.T) {
+	text := "他趣-广点通-达人一口价-[非荷尔蒙]-口播-[一手]-玉莹-xxxx"
+
+	// 正则表达式模式说明：
+	// ()捕获组  反斜杠\  ?贪婪模式
+	// [^-]只要中间不包含短横线的任意字符
+	re := regexp.MustCompile(`([^-]+)-`)
+	// [^-]+匹配1个或多个非短横线字符，比固定长度{3}更灵活
+
+	// 查找所有匹配项（返回[][]string结构）
+	matches := re.FindAllStringSubmatch(text, -1) // 使用FindAllStringSubmatch获取完整匹配上下文，避免边界问题
+	fmt.Println(len(matches))
+	for pos, match := range matches {
+		// 确保捕获组有效性，避免空匹配
+		if len(match) > 1 { // match[0]是完整匹配，match[1]是捕获组
+			// fmt.Println(match[0]) // 达人一口价-
+			fmt.Println(pos, match[1]) // 达人一口价
+			// strings.Trim(match[1], "[")
+		}
+	}
+
 }
