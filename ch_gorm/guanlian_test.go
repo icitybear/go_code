@@ -287,8 +287,13 @@ func TestHint(t *testing.T) {
 	// res := db.Hint("FORCE INDEX(idx_code_status)").Find(&uu, "code=?", "code2") // 报错
 	// res := db.Find(&uu, "code=?", "code2")
 	// https://learnku.com/docs/gorm/v2/hints/9769
-	res := db.Debug().Clauses(hints.ForceIndex("idx_code_status")).Find(&uu, "code=?", "code2")
-
+	txDb := db.Debug().Clauses(hints.ForceIndex("idx_code_status")).Where("code=?", "code2")
+	var total int64
+	err = txDb.Table("categorys").Count(&total).Error
+	fmt.Println(err)
+	fmt.Println(total)
+	// .Clauses(hints.ForceIndex("idx_code_status")) txDb会继承
+	res := txDb.Find(&uu) // 尽量不使用内嵌条件
 	fmt.Println(res.Error)
 	fmt.Println(uu)
 

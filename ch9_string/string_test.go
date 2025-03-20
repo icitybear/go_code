@@ -163,6 +163,38 @@ func camelToUnderscore(s string) string {
 	return builder.String()
 }
 
+func camelToUnderscoreV2(s string) string {
+	var builder strings.Builder
+	prevIsLower := false
+	prevIsDigit := false
+
+	for i, r := range s {
+		currentIsLower := unicode.IsLower(r)
+		currentIsUpper := unicode.IsUpper(r)
+		currentIsLetter := currentIsLower || currentIsUpper
+		currentIsDigit := unicode.IsDigit(r)
+
+		if i > 0 {
+			// 插入下划线规则：
+			// 1. 当前是大写字母且前一个是小写字母
+			// 2. 当前是字母且前一个是数字
+			if (currentIsUpper && prevIsLower) ||
+				(currentIsLetter && prevIsDigit) {
+				builder.WriteByte('_')
+			}
+		}
+
+		// 统一转为小写
+		builder.WriteRune(unicode.ToLower(r))
+
+		// 更新前序字符状态
+		prevIsLower = currentIsLower
+		prevIsDigit = currentIsDigit
+	}
+
+	return builder.String()
+}
+
 func UnderscoreToCamel(s string) string {
 	var builder strings.Builder
 	upperNext := false
@@ -218,10 +250,13 @@ func Test4(t *testing.T) {
 	fmt.Println(camelToUnderscore(camelCaseStr))
 
 	// Id =>id  ID =>id   连续的大写字母 默认一个驼峰
-	fmt.Println(camelToUnderscore("hellOWorld")) // hell_oworld
+	fmt.Println(camelToUnderscore("hellOWorld"))         // hell_oworld
+	fmt.Println(camelToUnderscore("manRetained1Rate"))   // man_retained1rate 有问题 数字后的大写没有接下划线
+	fmt.Println(camelToUnderscoreV2("manRetained1Rate")) // man_retained1_rate
 
 	fmt.Println(UnderscoreToCamel("hell_oworld")) // hellOworld 不会考虑连续大写字母的情况
 	fmt.Println(UnderscoreToCamel2("hell_oworld"))
+	fmt.Println(UnderscoreToCamel2("man_retained1rate")) // ManRetained1rate
 }
 
 func Test5(t *testing.T) {

@@ -73,3 +73,24 @@ func StrArrToInt32Arr(str string, sep string) []int32 {
 	}
 	return intList
 }
+
+func TestChunks(t *testing.T) {
+	strArr := []string{"aa", "bb", "cc"}
+	fmt.Println(strArr)
+	result := SplitIntoChunks(strArr, 2)
+
+	fmt.Println(result[0])
+	fmt.Println(result[1])
+}
+
+func SplitIntoChunks[T any](s []T, chunkSize int) [][]T {
+	var chunks [][]T
+	for i := 0; i < len(s); i += chunkSize {
+		end := i + chunkSize
+		if end > len(s) {
+			end = len(s)
+		}
+		chunks = append(chunks, s[i:end])
+	}
+	return chunks
+}
