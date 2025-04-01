@@ -4,4 +4,8 @@ go 1.19
 
 replace jwt => ./jwt
 
-require jwt v0.0.0-00010101000000-000000000000
+require (
+	github.com/davecgh/go-spew v1.1.1
+	github.com/golang-jwt/jwt v3.2.2+incompatible
+	github.com/golang-jwt/jwt/v4 v4.5.2
+)

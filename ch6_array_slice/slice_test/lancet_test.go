@@ -5,52 +5,45 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+
+	"github.com/duke-git/lancet/v2/slice"
+	"github.com/duke-git/lancet/v2/strutil"
 )
 
 // tag: 1.21版本编译通不过，1.22可以 建议使用1.22
+// type declarations inside generic functions are not currently supported 这个包2.3.3版本有问题，直接用2.3.5
 // func Join[T any](s []T, separator string) string 范型参数的隐式转换
 
-// func TestXxx9(t *testing.T) {
-// 	nums := []int{1, 2, 3, 4, 5}
-// 	result1 := slice.Join(nums, ",") // 范型
-// 	fmt.Println(result1)
+func TestXxx2(t *testing.T) {
+	// arr := []int32{1, 2, 3}
+	arr := []int32{}
+	str := slice.Join(arr, ",")
+	fmt.Println(str, len(str)) // 0
+	// 1,2,3  5个字符串
 
-// }
-
-// func TestXxx10(t *testing.T) {
-// 	str := ",1,2,4,"
-// 	permission := strings.Split(str, ",") //
-// 	for k, v := range permission {
-// 		if v == "" {
-// 			continue
-// 		}
-// 		fmt.Printf("k=%v v=%v\n", k, v)
-// 	}
-//
-// 	// 范型
-// 	filtered := lancet.Filter(permission, func(v int) bool {
-// 		return v != 0
-// 	})
-// 	for k, v := range filtered {
-// 		fmt.Printf("k=%v v=%v\n", k, v)
-// 	}
-// }
-
-// func TestXxx11(t *testing.T) {
-// 	result1 := slice.AppendIfAbsent([]string{"a", "b"}, "b")
-// 	result2 := slice.AppendIfAbsent([]string{"a", "b"}, "c")
-
-// 	fmt.Println(result1)
-// 	fmt.Println(result2)
-// }
+	// res0 := strutil.SplitAndTrim("", ",") // 避免了直接使用  strings.Split问题  每个元素都trim
+	// fmt.Println(res0, len(res0))            // [] 0
+	res0 := strutil.SplitEx("", ",", false) // 是否去除空字符串
+	fmt.Println(res0, len(res0))            // [] 1
+	res1 := strutil.SplitEx("", ",", true)  // 是否去除空字符串
+	fmt.Println(res1, len(res1))            // [] 0
+}
 
 func TestXxx11(t *testing.T) {
 	// str := Int32Join([]int32{1, 2, 3}, ",")
 	str := Int32Join([]int32{}, ",")
-	fmt.Println(str, len(str))
+	fmt.Println(str, len(str)) // 0
+	// 1,2,3  5个字符串
 
 	fmt.Println(StrArrToInt32Arr(str, ","))
+
+	// tag: 区别
+	res0 := strings.Split("", ",")
+	fmt.Println(res0, len(res0))     // [] 1
+	res := StrArrToInt32Arr("", ",") // 如果直接使用 strings.Split
+	fmt.Println(res, len(res))       // [] 0
 }
+
 func Int32Join(arr []int32, str string) string {
 	var strArr []string
 	for _, v := range arr {
