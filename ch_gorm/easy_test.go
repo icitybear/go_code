@@ -61,6 +61,7 @@ func TestEasy(t *testing.T) {
 func TestFrist(t *testing.T) {
 	fmt.Println("简单的数据操作")
 	source := "root:citybear@(127.0.0.1:13306)/mydata" // 账号：密码 ip端口 数据库名
+	// 读写超时 字符集 以及时区和时间格式自动转换
 	dsn := fmt.Sprintf("%s?charset=utf8mb4&readTimeout=%ds&writeTimeout=%ds&parseTime=True&loc=Local", source, 3, 3)
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
 		SkipDefaultTransaction: true, // 事务

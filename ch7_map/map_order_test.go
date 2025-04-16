@@ -8,14 +8,6 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 )
 
-type MyStruct struct {
-	// 定义结构体字段
-	Name string
-	Age  int
-}
-
-// 如果是listValue是proto框架支持的序列化类型，但是orderedmap结构体是不支持的
-
 // map转成*structpb.Value 类型， 排序是key自然
 func TestOrder2(t *testing.T) {
 	// 定义结构体切片
@@ -58,6 +50,7 @@ func TestOrder2(t *testing.T) {
 	fmt.Println(list)
 }
 
+// 如果是listValue是proto框架支持的序列化类型，但是orderedmap结构体是不支持的
 // 可执行 // 如果您想将结构体转换为*structpb.Value类型，您需要手动创建一个*structpb.Value对象，并为其设置相应的字段。下面是一个示例代码：
 func TestOrder3(t *testing.T) {
 	// 定义结构体实例

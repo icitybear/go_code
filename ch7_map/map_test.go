@@ -5,7 +5,11 @@ import (
 	"fmt"
 	"strings"
 	"testing"
+	"time"
+	"unicode"
 
+	"github.com/davecgh/go-spew/spew"
+	"github.com/duke-git/lancet/v2/structs"
 	"github.com/iancoleman/orderedmap"
 )
 
@@ -70,10 +74,10 @@ func TestOrder(t *testing.T) {
 	// 序列化也是一样的
 	// 1 想要指定顺序 包wrappers "google.golang.org/protobuf/types/known/wrapperspb"
 
-	// 2 使用封装好的 *orderedmap.OrderedMap o对象实例数据结构， 塞不进listValue
+	// 2 使用封装好的 *orderedmap.OrderedMap o对象实例数据结构， 塞不进listValue （不支持对象）
 	o := orderedmap.New()
 	o.Set("a", 1)
-	o.Set("c", 2)
+	o.Set("c", 2) // 按set顺序排序
 	o.Set("b", 3)
 	o.Set("c1", 4)
 	keys := o.Keys()
@@ -83,6 +87,105 @@ func TestOrder(t *testing.T) {
 	}
 	c, _ := json.Marshal(o)
 	fmt.Println(string(c))
+}
+
+type MyStruct struct {
+	// 定义结构体字段
+	Name        string
+	Age         int
+	AvgScore    string `json:"avgScore"`
+	SumScore    string `json:"SumScore"`
+	ClassName   string `json:"class_name"`
+	CreatedTime int
+}
+
+func UnderscoreToCamel(s string) string {
+	var builder strings.Builder
+	upperNext := false
+	firstLetter := true
+	for _, r := range s {
+		if r == '_' {
+			upperNext = true
+		} else {
+			if upperNext {
+				builder.WriteRune(unicode.ToUpper(r))
+				upperNext = false
+			} else {
+				if firstLetter {
+					builder.WriteRune(unicode.ToUpper(r))
+					firstLetter = false
+				} else {
+					builder.WriteRune(r)
+				}
+			}
+		}
+	}
+
+	return builder.String()
+}
+func TestOrderStruct(t *testing.T) {
+	result := []MyStruct{
+		// 添加结构体实例
+		{"name1", 1, "10", "20", "class1", 1744775442},
+		{"name2", 2, "10", "20", "class2", 1744775442},
+		{"name3", 3, "10", "20", "class3", 1744775442},
+	}
+	// tag: 最好与结构体字段名一致 不是以json为准 （最多转下大驼峰命名 匹配字段）
+	customSortSlice := []string{"name", "age", "avgScore", "SumScore", "class_name", "createdTime"}
+	customTitleMap := map[string]string{
+		"name":        "名称",
+		"age":         "年龄",
+		"avgScore":    "平均",
+		"SumScore":    "总分",
+		"class_name":  "课程名",
+		"createdTime": "创建时间",
+	}
+
+	tempMap := make([]*orderedmap.OrderedMap, 0)
+	for _, item := range result {
+		// 使用orderedmap 不然得定义个排序结构体，方便序列化时有序
+		o := orderedmap.New()          // o.Set 设置字段标题 跟值 支持map排序的
+		targetObj := structs.New(item) // 提供操作 struct, tag, field 的相关函数
+		// fmt.Printf("%+v", targetObj)   // 转为对象都是对应的字段名
+		// &{
+		// raw:{Name:name1 Age:1 AvgScore:10 SumScore:20 ClassName:class1 CreatedTime:1744775442}
+		// rtype:0x100b67040
+		// rvalue:{typ:0x100b67040 ptr:0x140001009b0 flag:153}
+		// TagName:json
+		// }
+
+		// 显示个性标题
+		for _, dims := range customSortSlice {
+			// dims是自己想显示的 key 对应有map设置， 然后映射到结构体对应的字段
+			fieldDims := UnderscoreToCamel(dims)
+			dimsName := customTitleMap[dims]
+			fieldDimsVal, ok := targetObj.Field(fieldDims)
+			if ok {
+				dimsValue := fieldDimsVal.Value()
+				if fieldDims == "CreatedTime" {
+					// tag: 类似元素为数组的情况，时间戳转时间字符串的情况
+					if createdTime, ok := fieldDimsVal.Value().(int); ok {
+						dimsValue = time.Unix(int64(createdTime), 0).In(time.Local).Format("2006-01-02 15:04:05")
+					}
+				}
+				o.Set(dimsName, dimsValue)
+			} else {
+				o.Set(dimsName, "")
+			}
+		}
+
+		// for _, targetKey := range sortSlice {
+		// 	targetKey2 := util.UnderscoreToCamel(targetKey) // 下划线转驼峰因为结果集是结构体
+		// 	targetName := titleMap[targetKey]
+		// 	if mField, ok := targetObj.Field(targetKey2); ok {
+		// 		o.Set(targetName, mField.Value())
+		// 	}
+		// }
+
+		tempMap = append(tempMap, o)
+	}
+
+	spew.Println(tempMap)
 }
 
 var (

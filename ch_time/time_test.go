@@ -88,6 +88,21 @@ func TestFormatT(t *testing.T) {
 	fmt.Println(dateString, t2.Unix())
 }
 
+func TimestampToDateString(timestamp int64) string {
+	// loc, _ := time.LoadLocation("Local")
+	loc, _ := time.LoadLocation("Asia/Shanghai")
+	// 将时间戳转换为 time.Time 类型 .UTC() 容器里linux时区默认UTC
+	t := time.Unix(timestamp, 0).In(loc)
+
+	// 将时间转换为指定格式的日期字符串
+	dateString := t.Format("2006-01-02 15:04:05")
+	return dateString
+}
+func TestFormatT2(t *testing.T) {
+	ts := 1743673260
+	str := TimestampToDateString(int64(ts))
+	println(str)
+}
 func TestToday(t *testing.T) {
 	startDate := "2025-02-11"
 	// 解析日期字符串

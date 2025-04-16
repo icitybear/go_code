@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/davecgh/go-spew/spew"
 	"gorm.io/driver/mysql"
 
 	"gorm.io/gorm"
@@ -56,6 +57,7 @@ func setupDatabase() (*gorm.DB, error) {
 	dsn := fmt.Sprintf("%s?charset=utf8mb4&readTimeout=%ds&writeTimeout=%ds&parseTime=True&loc=Local", source, 3, 3)
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
 		SkipDefaultTransaction: true, // 事务
+		// Logger:                 logger.Default.LogMode(logger.Info), // 全局debug模式
 	})
 	// db, err := gorm.Open(sqlite.Open("test.db"), &gorm.Config{}) // 	"gorm.io/driver/sqlite"
 	if err != nil {
@@ -275,6 +277,45 @@ func TestMain6(t *testing.T) {
 		panic(err)
 	}
 	getPostsWithJoin(db)
+}
+
+func TestSql(t *testing.T) {
+
+	db, err := setupDatabase()
+	if err != nil {
+		panic(err)
+	}
+	// 方案1: Debug模式 全局和临时
+	var posts []Post
+	// 方案2:  必须在tryRun模式 默认情况 GORM 会在执行 SQL 后清空 Statement.SQL，导致后续访问为空。
+	result := db.Session(&gorm.Session{DryRun: true}).Preload("User").Preload("PostExt").
+		Joins("left join post_ext t1 on t1.post_id = posts.id").
+		Where("t1.status = ?", 1). // 左表字段
+		Where("user_id > ?", 3).   // 主表字段
+		Find(&posts)
+
+	sql := result.Statement.SQL.String()
+	vars := result.Statement.Vars
+	fmt.Println(sql)
+	spew.Println(vars)
+	// SELECT `posts`.`id`,`posts`.`user_id`,`posts`.`title`,`posts`.`code` FROM `posts` left join post_ext t1 on t1.post_id = posts.id WHERE t1.status = ? AND user_id > ?
+	// [1 3]
+	realSql := db.Dialector.Explain(sql, vars...)
+	fmt.Println(realSql)
+
+	spew.Println(posts) // tryRun模式 不会去真正执行
+
+	// 方案3: 无需 DryRun，但仅支持查询类操作（如 Find、First)
+	// ToSQL 通过闭包接收 GORM 的查询链式调用，并返回最终构建的 SQL 字符串
+	sql2 := db.ToSQL(func(tx *gorm.DB) *gorm.DB {
+		// 这里真正执行了
+		var total int64
+		res := tx.Table("categorys").Where("1=1").Count(&total)
+		fmt.Println(total) // 不会真正执行
+		return res
+	})
+	fmt.Println(sql2)
+
 }
 
 func TestHint(t *testing.T) {

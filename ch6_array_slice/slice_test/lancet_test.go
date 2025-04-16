@@ -67,6 +67,12 @@ func StrArrToInt32Arr(str string, sep string) []int32 {
 	return intList
 }
 
+func TestSplitTrim(t *testing.T) {
+	str := "{a,b,  c, d}"
+	res := strutil.SplitAndTrim(str, ",", "{}")
+	fmt.Println(res)
+}
+
 func TestChunks(t *testing.T) {
 	strArr := []string{"aa", "bb", "cc"}
 	fmt.Println(strArr)
