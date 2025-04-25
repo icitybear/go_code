@@ -3,6 +3,8 @@ package slice_test
 import (
 	"fmt"
 	"testing"
+
+	"github.com/davecgh/go-spew/spew"
 )
 
 // 切片的类型字面量中只有元素的类型，没有长度
@@ -23,6 +25,28 @@ func TestArr(t *testing.T) {
 	// }
 
 }
+
+type stu struct {
+	Name string
+}
+
+func TestSliceSm(t *testing.T) {
+	var s []int
+	for i := 0; i < 10; i++ {
+		s = append(s, i)
+	}
+	spew.Println(s)
+
+	var sm []*stu // 切片可以只声明 然后直接使用 map必须声明初始化
+	spew.Println(sm)
+	var sm1 []*stu
+	sm = append(sm, sm1...) // 空的不会追加上
+	spew.Println(sm)
+	fmt.Println(len(sm), cap(sm))
+	sm = append(sm, &stu{Name: "csx"})
+	spew.Println(sm)
+}
+
 func TestSliceInit(t *testing.T) {
 	var s0 []int
 	t.Log(len(s0), cap(s0))

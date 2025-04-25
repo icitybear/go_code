@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/davecgh/go-spew/spew"
+	"github.com/jinzhu/copier"
 	"github.com/mitchellh/mapstructure"
 )
 
@@ -20,6 +21,38 @@ type Person struct {
 type Class struct {
 	No   string
 	Pers Person
+}
+
+type PersonFz struct {
+	Name   string
+	Age    int
+	Gender string
+	Cl     *Tech // 指针
+}
+type Tech struct {
+	No string
+}
+
+func TestStructCopy(t *testing.T) {
+	person := &PersonFz{
+		Name:   "张三",
+		Age:    20,
+		Gender: "男",
+		Cl: &Tech{
+			No: "aa",
+		},
+	}
+
+	// var person2 PersonFz // 必须要分配空间
+	person2 := &PersonFz{}
+	copier.Copy(person2, person)
+	spew.Println(person2) //  <*>{张三 20 男 <*>{aa}}
+	person2.Name = "李四"
+	person2.Cl.No = "bb"
+	// copy是对应的字段值
+
+	spew.Println(person2) // <*>{李四 20 男 <*>{bb}}
+	spew.Println(person)  // <*>{张三 20 男 <*>{aa}}
 }
 
 func StructToMap(obj interface{}) map[string]interface{} {

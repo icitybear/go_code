@@ -86,6 +86,9 @@ func TestFormatT(t *testing.T) {
 	dateString := t2.Format("2006-01-02 15:03:04")
 
 	fmt.Println(dateString, t2.Unix())
+
+	endTime := time.Now().AddDate(0, 0, -1)
+	fmt.Println(endTime.Unix())
 }
 
 func TimestampToDateString(timestamp int64) string {
