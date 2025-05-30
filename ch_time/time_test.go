@@ -28,6 +28,19 @@ func TestParse(t *testing.T) {
 	fmt.Println(t3.Unix()) // 1716480000
 }
 
+func TestParse2(t *testing.T) {
+	// 最后相同值会覆盖覆盖
+	// str := "2025-05-25 00:00 - 00:59"
+	str := "2025-05-25 00:00 - 01:59" // hour=1
+	tsTime, err := time.ParseInLocation("2006-01-02 15:04 - 15:04", str, time.Local)
+
+	if err != nil {
+		fmt.Println(err)
+	}
+	statDate := tsTime.Format("20060102")
+	statHour := tsTime.Hour()
+	fmt.Println(statDate, statHour)
+}
 func TestBet(t *testing.T) {
 	startDateTime, _ := time.Parse("2006-01-02", "2024-12-30")
 	endDateTime, _ := time.Parse("2006-01-02", "2025-01-02")
@@ -89,6 +102,25 @@ func TestFormatT(t *testing.T) {
 
 	endTime := time.Now().AddDate(0, 0, -1)
 	fmt.Println(endTime.Unix())
+}
+
+func TestXXX(t *testing.T) {
+	eventTime := 1745764920
+	//regTime := 1692860732
+	reflowTime := 1745755798
+	res := IsSameDay(int64(eventTime), int64(reflowTime))
+	fmt.Println(res)
+
+}
+
+func IsSameDay(aTime int64, bTime int64) bool {
+	deviceY, deviceM, deviceD := time.Unix(aTime, 0).Date()
+	accountY, accountM, accountD := time.Unix(bTime, 0).Date()
+	if deviceY == accountY && deviceM == accountM && deviceD == accountD {
+		return true
+	}
+
+	return false
 }
 
 func TimestampToDateString(timestamp int64) string {
