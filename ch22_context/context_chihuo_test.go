@@ -9,7 +9,7 @@ import (
 
 // 可以看源码解析的那文章和视频
 func TestContext(t *testing.T) {
-	worker3()
+	worker1()
 }
 
 // 自动超时

@@ -1,6 +1,7 @@
 package easy_test
 
 import (
+	"database/sql"
 	"fmt"
 	"testing"
 
@@ -342,5 +343,16 @@ func TestHint(t *testing.T) {
 	var ct []Category
 	db.Debug().Raw("SELECT * FROM categorys FORCE INDEX (idx_code_status) WHERE code = ?", "code2").Scan(&ct)
 	fmt.Println(ct)
+	// scan要显示指定表
+	var total2 sql.NullFloat64 // 命名不需要与as字段一致
+	err = db.Debug().Table("categorys").Select("sum(status) as total").Where("id > ?", 0).Scan(&total2).Error
+	if err != nil {
+		fmt.Println(err)
+	}
+	if total2.Valid {
+		fmt.Println(float32(total2.Float64))
+	} else {
+		fmt.Println("end")
+	}
 
 }

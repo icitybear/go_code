@@ -28,6 +28,22 @@ func TestParse(t *testing.T) {
 	fmt.Println(t3.Unix()) // 1716480000
 }
 
+func TestParseHour(t *testing.T) {
+	str := "2025-05-25 1:00" // hour=1
+	tsTime, err := time.ParseInLocation("2006-01-02 15:04", str, time.Local)
+	if err != nil {
+		fmt.Println(err)
+	}
+	statDate := tsTime.Format("20060102")
+	statHour := tsTime.Hour()
+	fmt.Println(statDate, statHour)
+
+	tsTime = time.Now().Add(-time.Hour * time.Duration(3))
+	statDate = tsTime.Format("20060102")
+	statHour = tsTime.Hour()
+	fmt.Println(statDate, statHour)
+}
+
 func TestParse2(t *testing.T) {
 	// 最后相同值会覆盖覆盖
 	// str := "2025-05-25 00:00 - 00:59"
@@ -62,22 +78,20 @@ func TestBet(t *testing.T) {
 
 func TestFormat(t *testing.T) {
 
-	a := 1632 % 1000
-	fmt.Println(a)
-
-	statDateTime := time.Now().AddDate(0, 0, -1)
-	str := statDateTime.Format("2006-01-02 00:00:00")
-	fmt.Println(str)
-
-	str1 := "2024-06-07" // 默认是0点
-	parsedTime1, _ := time.ParseInLocation("2006-01-02", str1, time.Local)
-	parsedTime2 := time.Now().AddDate(0, 0, -14)
+	str1 := "hhhhh" // 默认是0点
+	parsedTime1, _ := time.ParseInLocation("2006-01-02", "2025-06-07", time.Local)
+	parsedTime2, _ := time.ParseInLocation("2006-01-02", "2025-06-08", time.Local)
+	//before after不包含当日
+	if parsedTime1.Before(parsedTime2) {
+		fmt.Println(str1)
+		return
+	}
 	// After 这里直接对比的是日期 Ymd没包括时分秒
 	if parsedTime1.After(parsedTime2) {
 		fmt.Println(str1)
 		return
 	}
-	fmt.Println("after")
+	fmt.Println("end")
 }
 
 func TestFormatT(t *testing.T) {
@@ -193,5 +207,31 @@ func TestTimer(t *testing.T) {
 	for i := 0; i < 5; i++ {
 		ch <- i
 		time.Sleep(1 * time.Second)
+	}
+}
+
+func TestBefore(t *testing.T) {
+	startDateTime, _ := time.Parse("2006-01-02", "2025-06-01")
+	endDateTime, _ := time.Parse("2006-01-02", "2025-06-09")
+	// 开始日期
+	statDt := startDateTime
+	i := 5 // 夸天执行
+	for {
+
+		endDt := statDt.AddDate(0, 0, i)
+		if statDt.After(endDateTime) {
+			fmt.Print(statDt, "limit")
+			break
+		}
+
+		if endDt.After(endDateTime) {
+			endDt = endDateTime
+		}
+
+		statDate := statDt.Format("2006-01-02")
+		endDate := endDt.Format("2006-01-02")
+		fmt.Println(statDate, endDate)
+
+		statDt = endDt.AddDate(0, 0, 1)
 	}
 }

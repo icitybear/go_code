@@ -3,12 +3,15 @@ package string_test
 import (
 	"bytes"
 	"fmt"
+	"math"
 	"regexp"
 	"strconv"
 	"strings"
 	"testing"
 	"unicode"
 	"unicode/utf8"
+
+	"github.com/Knetic/govaluate"
 )
 
 // 拼接
@@ -325,3 +328,84 @@ func TestRegex3(t *testing.T) {
 	}
 
 }
+
+func TestValuate(t *testing.T) {
+	// 1. 创建表达式
+	exprStr := "10 > 0 && (response_time <= 100 || retries < 5)"
+	expression, err := govaluate.NewEvaluableExpression(exprStr)
+	if err != nil {
+		panic(err)
+	}
+
+	// 2. 准备参数
+	params := map[string]interface{}{
+		"response_time": 85.0,
+		"retries":       3,
+	}
+
+	// 3. 计算表达式
+	result, err := expression.Evaluate(params)
+	if err != nil {
+		panic(err)
+	}
+
+	// 4. 处理结果 (布尔值)
+	fmt.Printf("结果: %v\n", result) // 输出: 结果: true
+
+	// 函数调用
+	functions := map[string]govaluate.ExpressionFunction{
+		"strlen": func(args ...interface{}) (interface{}, error) {
+			length := len(args[0].(string))
+			return float64(length), nil
+		},
+	}
+	expression2, _ := govaluate.NewEvaluableExpressionWithFunctions(
+		"strlen('heo') > 3",
+		functions,
+	)
+	params2 := map[string]interface{}{} // 本身不需要参数的函数
+	result2, err := expression2.Evaluate(params2)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("结果: %v\n", result2)
+
+	// exprStr := `
+	// 	(employee_salary > 50000 &&
+	// 	years_experience >= 5) ||
+	// 	has_advanced_degree == true
+	// `
+
+	// params := map[string]interface{}{
+	// 	"employee_salary":     65000.0,
+	// 	"years_experience":    4,
+	// 	"has_advanced_degree": true,
+	// }
+
+}
+
+func TestValuate2(t *testing.T) {
+	// 注册自定义函数
+	functions := map[string]govaluate.ExpressionFunction{
+		"max": func(args ...interface{}) (interface{}, error) {
+			a := args[0].(float64)
+			b := args[1].(float64)
+			return math.Max(a, b), nil
+		},
+	}
+
+	// 创建带函数的表达式
+	expr, _ := govaluate.NewEvaluableExpressionWithFunctions(
+		"max(temperature, 30) > 25",
+		functions,
+	)
+
+	params := map[string]interface{}{"temperature": 28.5}
+	result, _ := expr.Evaluate(params)
+	fmt.Printf("结果: %v\n", result)
+}
+
+// 数学运算 "(price * quantity) + tax"
+// 逻辑运算 "score >= 80 && attendance > 0.75"
+// 三元表达式 "status == 200 ? 'OK' : 'ERROR'"
+// 函数调用
