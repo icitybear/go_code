@@ -29,7 +29,8 @@ func TestParse(t *testing.T) {
 }
 
 func TestParseHour(t *testing.T) {
-	str := "2025-05-25 1:00" // hour=1
+	loc := time.Local
+	str := "2025-06-22 1:00" // hour=1
 	tsTime, err := time.ParseInLocation("2006-01-02 15:04", str, time.Local)
 	if err != nil {
 		fmt.Println(err)
@@ -38,10 +39,20 @@ func TestParseHour(t *testing.T) {
 	statHour := tsTime.Hour()
 	fmt.Println(statDate, statHour)
 
-	tsTime = time.Now().Add(-time.Hour * time.Duration(3))
-	statDate = tsTime.Format("20060102")
-	statHour = tsTime.Hour()
-	fmt.Println(statDate, statHour)
+	// 自然日
+	res := time.Now().Sub(tsTime)
+	fmt.Println(res)
+
+	start := time.Date(tsTime.Year(), tsTime.Month(), tsTime.Day(), 0, 0, 0, 0, loc)
+	// 规范化到结束日的 00:00:00
+	now := time.Now()
+	end := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, loc)
+
+	// 计算时间差并转换为天数
+	fmt.Println(end.Sub(start).Hours())
+	days := end.Sub(start).Hours() / 24
+	fmt.Println(days) //  如果要算自然日就要+1
+
 }
 
 func TestParse2(t *testing.T) {

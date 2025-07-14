@@ -360,7 +360,7 @@ func TestValuate(t *testing.T) {
 		},
 	}
 	expression2, _ := govaluate.NewEvaluableExpressionWithFunctions(
-		"strlen('heo') > 3",
+		"strlen('heo') > 3", // 比较符2边都必须是数值类型
 		functions,
 	)
 	params2 := map[string]interface{}{} // 本身不需要参数的函数

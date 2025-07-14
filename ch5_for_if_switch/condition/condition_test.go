@@ -1,6 +1,8 @@
 package condition_test
 
-import "testing"
+import (
+	"testing"
+)
 
 // 多个条件 正确的写法
 func TestSwitchMultiCase(t *testing.T) {

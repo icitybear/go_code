@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"strings"
 	"testing"
+
+	"github.com/davecgh/go-spew/spew"
 )
 
 // 结构体序列化json 反射里tag标签
@@ -300,4 +302,63 @@ func TestFoo(t *testing.T) {
 
 	p2.Age = new(int) // &{1 HHH 0x14000020230}
 	fmt.Println(p2)
+}
+
+type BaseResponse struct {
+	Code      int    `json:"code"`
+	Message   string `json:"message"`
+	RequestID string `json:"request_id"`
+	//Data      Data   `json:"data"`
+}
+
+type MaterialTagResp struct {
+	BaseResponse
+	Data struct {
+		Materials []struct {
+			MaterialId             string `json:"material_id"`
+			IsInefficientMaterial  bool   `json:"is_inefficient_material"`
+			IsSimilarMaterial      bool   `json:"is_similar_material"`
+			IsAdHighQuality        bool   `json:"is_ad_high_quality"`
+			IsFirstPublishMaterial bool   `json:"is_first_publish_material"`
+		} `json:"materials"`
+	} `json:"data"`
+	RequestId string `json:"request_id"`
+}
+
+func TestJsonUnError(t *testing.T) {
+	resp := `{
+					"code" : 0,
+					"message" : "OK",
+					"request_id" : "202506231704192D6C68B1846BDA368FFE",
+					"data" : {
+						"materials" : [ {
+						"is_ad_high_quality" : false,
+						"is_ad_low_quality_material" : false,
+						"is_ecp_high_quality" : false,
+						"is_ecp_low_quality_material" : false,
+						"is_first_publish_material" : true,
+						"is_inefficient_material" : false,
+						"is_similar_expected_queue_material" : false,
+						"is_similar_material" : false,
+						"is_similar_queue_material" : false,
+						"material_id" : "7482047692894421033"
+						} ]
+					}
+				}`
+	resp = `{
+				"code" : 40100,
+				"message" : "Message:Too many requests. Please retry in some time.",
+				"request_id" : "20250623161537627BABA09EB1F331AA9B"
+			}`
+	// 多了逗号 invalid character '}' looking for beginning of object key string
+	// resp = `{}` // json反序列化并不会报错
+	resp = `{}{}` // json格式错误 多个{} invalid character '{' after top-level value
+	var ret MaterialTagResp
+	err := json.Unmarshal([]byte(resp), &ret)
+	if err != nil {
+		spew.Println(err)
+		return
+	}
+	spew.Println(ret)
+
 }

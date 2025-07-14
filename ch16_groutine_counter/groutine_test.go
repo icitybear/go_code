@@ -55,13 +55,14 @@ func TestGroutine2(t *testing.T) {
 	// 我们在主协程中通过一个死循环来判断 counter 的值，只有当它大于等于 10 时，才退出循环，进而退出整个程序
 	for {
 		lock.Lock()
-		c := counter //访问 其他goroutine的共享内存时 也要通过锁
+		c := counter // 访问 其他goroutine的共享内存时 也要通过锁
 		lock.Unlock()
 		runtime.Gosched() // 让出 CPU 时间片 去执行子协程的  终止当前协程 runtime.Goexit() 阻塞当前
 		if c >= 10 {
 			break
 		}
 	}
+	fmt.Printf("counter: %d\n", counter)
 	end := time.Now()
 	consume := end.Sub(start).Seconds()
 	fmt.Println("程序执行耗时(s):", consume)
@@ -83,7 +84,7 @@ func TestGroutine3(t *testing.T) {
 	// 改为等待锁
 	wg := sync.WaitGroup{}
 	//wg.Add(10) // 初始化计数器数目为10 这样顺序还是乱的
-	for i := 0; i < 10; i++ {
+	for i := 0; i < 5; i++ {
 		wg.Add(1) // 运行时才能知道计数器的数目, 循环体内动态增加计数器，每次+1 顺序正确
 		go addV3(1, i, wg.Done)
 	}
