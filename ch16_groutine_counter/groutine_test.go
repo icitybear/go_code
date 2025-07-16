@@ -4,8 +4,11 @@ import (
 	"fmt"
 	"runtime"
 	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
+
+	"github.com/davecgh/go-spew/spew"
 )
 
 // 开启协程时的传参
@@ -159,3 +162,215 @@ func TestJZ(t *testing.T) {
 // pos:7, v:&{ID:107 Msg:jz:107}
 // pos:8, v:&{ID:108 Msg:jz:108}
 // pos:9, v:&{ID:109 Msg:jz:109}
+
+// 使用并发编程提高响应的案例
+func processDeal(val int) int {
+	time.Sleep(1 * time.Second) // 耗时久一点，协程执行时的并发才能体现
+	return val * 2
+}
+
+func TestBingfa(t *testing.T) {
+	start := time.Now()
+
+	arrSlice := []int{1, 2, 3, 4, 5}
+	var result []int
+	for pos, v := range arrSlice {
+		_ = pos
+		newVal := processDeal(v)
+		result = append(result, newVal)
+	}
+	spew.Printf("result:%+v \n", result)
+
+	end := time.Now()
+	consume := end.Sub(start).Seconds()
+	fmt.Println("程序执行耗时(s):", consume)
+}
+
+// result:[2 4 6 8 10]
+// 程序执行耗时(s): 5.006926209
+
+func TestBingfa2(t *testing.T) {
+	start := time.Now()
+	arrSlice := []int{1, 2, 3, 4, 5}
+	var result []int
+	// 改为等待锁
+	wg := sync.WaitGroup{}
+	for pos, v := range arrSlice {
+		wg.Add(1)
+		_ = pos
+		go func(val int) {
+			defer wg.Done()
+			newVal := processDeal(val)
+			result = append(result, newVal)
+		}(v)
+	}
+	wg.Wait()
+	spew.Printf("result:%+v \n", result)
+
+	end := time.Now()
+	consume := end.Sub(start).Seconds()
+	fmt.Println("程序执行耗时(s):", consume)
+}
+
+// 问题1 竞态条件 并发情况下保护共享资源result切片
+// 所以需要 新值传给协程参数 不然就是result:[10 10 10 10 10]
+// result:[4] result:[8] 随机了 result:[2 8] 等
+// 程序执行耗时(s): 1.000624583
+
+// 单机锁
+func TestBingfa3(t *testing.T) {
+	start := time.Now()
+
+	arrSlice := []int{1, 2, 3, 4, 5}
+	var result []int
+
+	wg := sync.WaitGroup{}
+	mu := sync.Mutex{}
+	for pos, v := range arrSlice {
+		wg.Add(1)
+		_ = pos
+		// 由于 goroutine 完成顺序不确定，结果顺序随机
+		go func(val int) {
+			defer wg.Done()
+			// mu.Lock() 锁放前和放后的区别
+			newVal := processDeal(val)
+			mu.Lock() // 只保护共享资源 由于互斥锁保证了append操作的互斥性，所以每个处理结果都会被安全地添加到result切片中。
+			result = append(result, newVal)
+			mu.Unlock()
+		}(v)
+	}
+	wg.Wait()
+	spew.Printf("result:%+v \n", result)
+
+	end := time.Now()
+	consume := end.Sub(start).Seconds()
+	fmt.Println("程序执行耗时(s):", consume)
+}
+
+// result:[4 10 6 2 8]
+// 程序执行耗时(s): 1.001229875
+
+// 原子 错误用法 正确的用法
+func TestBingfa4(t *testing.T) {
+	start := time.Now()
+
+	arrSlice := []int{1, 2, 3, 4, 5}
+	var result []int
+
+	wg := sync.WaitGroup{}
+	// var atomicVal atomic.Value // =》 any  整个对象存储
+	// atomicVal.Store(make([]int, 0)) // 一开始就指定类型
+	// if v := atomicVal.Load(); v != nil {
+	// 	atomicVal.Store(result)
+	// }
+
+	var atomicVal int32
+	for pos, v := range arrSlice {
+		wg.Add(1)
+		_ = pos
+		go func(val int) {
+			defer wg.Done()
+			newVal := processDeal(val)
+			// 使用cas保持原子性  错误用法
+			old := atomic.LoadInt32(&atomicVal) // 如果多个goroutine读取到相同的old值，就会导致部分CAS失败
+			// CAS 仅保护了计数器 atomicVal 的原子递增
+			if atomic.CompareAndSwapInt32(&atomicVal, old, old+1) {
+				// 即使CAS成功，多个goroutine同时append同一个切片也是不安全的。
+				result = append(result, newVal)
+			} else {
+				fmt.Println("cas原子操作失败", old)
+			}
+		}(v)
+	}
+	wg.Wait()
+	spew.Printf("result:%+v \n", result)
+	spew.Printf("atomicVal:%+v \n", atomic.LoadInt32(&atomicVal))
+	end := time.Now()
+	consume := end.Sub(start).Seconds()
+	fmt.Println("程序执行耗时(s):", consume)
+}
+
+// result:[6 4] // 错误情况
+// atomicVal:5	// 值可能非5 4
+// 程序执行耗时(s): 1.001535792
+
+// 比如3个协程跑
+//	Time | Goroutine A         | Goroutine B         | Goroutine C
+//
+// -----|---------------------|---------------------|--------------------
+//
+//	t1  | Load old=0          |                     |
+//	t2  |                     | Load old=0          |
+//	t3  | CAS(0→1) 成功       |                     |
+//	    | append(result)      |                     |
+//	t4  |                     | CAS(0→1) 失败!      |
+//	t5  |                     |                     | Load old=1
+//	t6  |                     |                     | CAS(1→2) 成功
+//	    |                     |                     | append(result)
+//
+
+// 拆分成非共享内存
+func TestBingfa5(t *testing.T) {
+	start := time.Now()
+
+	arrSlice := []int{1, 2, 3, 4, 5}
+	result := make([]int, len(arrSlice))
+
+	wg := sync.WaitGroup{}
+	for pos, v := range arrSlice {
+		wg.Add(1)
+
+		// 由于 goroutine 完成顺序不确定，结果顺序随机
+		go func(v int, val *int) {
+			defer wg.Done()
+			newVal := processDeal(v)
+			// 直接把引用类型 result拆分为非共享的类型 指针
+			*val = newVal
+
+		}(v, &result[pos])
+
+	}
+	wg.Wait()
+	spew.Printf("result:%+v \n", result)
+
+	end := time.Now()
+	consume := end.Sub(start).Seconds()
+	fmt.Println("程序执行耗时(s):", consume)
+}
+
+// result:[2 4 6 8 10]
+// 程序执行耗时(s): 1.001310292
+
+// 使用chan 通过通道实现一把锁
+func TestBingfa6(t *testing.T) {
+	start := time.Now()
+
+	arrSlice := []int{1, 2, 3, 4, 5}
+	result := make([]int, 0)
+
+	wg := sync.WaitGroup{}
+	ch := make(chan struct{}, 1) // 默认0无缓冲通道，没有另外协程接收 一放入就会堵塞
+	ch <- struct{}{}
+	for pos, v := range arrSlice {
+		wg.Add(1)
+		_ = pos
+		// 由于 goroutine 完成顺序不确定，结果顺序随机
+		go func(v int) {
+			defer wg.Done()
+			newVal := processDeal(v)
+			<-ch
+			result = append(result, newVal)
+			ch <- struct{}{}
+		}(v)
+
+	}
+	wg.Wait()
+	spew.Printf("result:%+v \n", result)
+
+	end := time.Now()
+	consume := end.Sub(start).Seconds()
+	fmt.Println("程序执行耗时(s):", consume)
+}
+
+// result:[8 2 10 4 6]
+// 程序执行耗时(s): 1.00154425

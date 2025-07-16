@@ -302,9 +302,11 @@ func (c *CustomError2) Error() string {
 	return fmt.Sprintf("自定义错误, code: %d, msg: %s", c.Code, c.Msg)
 }
 func Handle(content string) error {
-	var e *CustomError2
+	var e *CustomError2 // 正常的应该是像 var e CustomError3
 	if content != "" {
-		return e // 容易踩坑的点
+		// (*err_test.CustomError2)<nil> 不等于 nil
+		return e // 容易踩坑的点 此时返回的error类型（是接口）的变量，动态类型是 *CustomError2，动态值是 nil。
+		//  *errors.errorString *fmt.wrapError *err_test.CustomError2
 	}
 	e = &CustomError2{
 		Code: 1,
@@ -324,6 +326,39 @@ func TestError(t *testing.T) {
 	err = Handle(c2)
 	if err != nil {
 		spew.Printf("处理c2失败, err=%+#v\n", err) // 处理c2失败, err=(*err_test.CustomError2)(0x1400000e300)自定义错误, code: 1, msg: 内容为空
+	}
+}
+
+type CustomError3 struct {
+	Code int
+	Msg  string
+}
+
+func (c *CustomError3) Error() string {
+	return fmt.Sprintf("自定义错误, code: %d, msg: %s", c.Code, c.Msg)
+}
+func Handle3(content string) error {
+	var e CustomError3
+	if content != "" {
+		// 这里因为error是的方法Error()是归属结构体指针的 所以要&e
+		return &e // 返回的 是已经分配地址的结构体指针 肯定不为nil
+	}
+	e = CustomError3{
+		Code: 1,
+		Msg:  "内容为空",
+	}
+	return &e
+}
+func TestError3(t *testing.T) {
+	c1 := "xx"
+	err := Handle3(c1)
+	if err != nil {
+		spew.Printf("处理c1失败, err=%+#v\n", err) // 处理c1失败, err=(*err_test.CustomError3)(0x1400000e300)自定义错误, code: 0, msg:
+	}
+	c2 := ""
+	err = Handle3(c2)
+	if err != nil {
+		spew.Printf("处理c2失败, err=%+#v\n", err) // 处理c2失败, err=(*err_test.CustomError3)(0x1400000e318)自定义错误, code: 1, msg: 内容为空
 	}
 }
 
