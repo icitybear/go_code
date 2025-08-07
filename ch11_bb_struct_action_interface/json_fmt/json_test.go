@@ -3,10 +3,12 @@ package json_fmt
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"strings"
 	"testing"
 
 	"github.com/davecgh/go-spew/spew"
+	"github.com/mitchellh/mapstructure"
 )
 
 // 结构体序列化json 反射里tag标签
@@ -361,4 +363,35 @@ func TestJsonUnError(t *testing.T) {
 	}
 	spew.Println(ret)
 
+}
+
+// float32位 和float64位 json字符串数值精度解析问题问题
+func TestDecoder2(t *testing.T) {
+	var request = `{"cost":205269.370}`
+
+	type fStruct struct {
+		Cost float32 `json:"cost" mapstructure:"cost"`
+	}
+	// tag: 正确做法 Cost float64
+	var test1 interface{}
+	_ = json.Unmarshal([]byte(request), &test1) // 解码
+	obj := test1.(map[string]interface{})
+	cost := obj["cost"]
+	fmt.Printf("%T, %#v \n", cost, cost) // float64, 205269.37
+
+	result := fStruct{}
+	err := mapstructure.Decode(obj, &result)
+	if err != nil {
+		fmt.Println("error:", err)
+	}
+	fmt.Printf("%T, %#v \n", result, result) // json_fmt.fStruct, json_fmt.fStruct{Cost:205269.38}
+	// 由于proto只支持float 默认就是float32位 所以如果返回的结果有精度要求 就使用字符串类型
+
+	var a float64 = 205269.370
+	fmt.Println(float32(a)) // 直接转化精度异常 205269.38
+
+	c := strconv.FormatFloat(a, 'f', -1, 64)
+	fmt.Println(c)
+	d, _ := strconv.ParseFloat(c, 64)
+	fmt.Println(d)
 }

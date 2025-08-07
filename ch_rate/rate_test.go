@@ -73,15 +73,28 @@ func TestRate(t *testing.T) {
 	t.Logf("start: %v, end: %v, seconds: %v", startTime, endTime, endTime.Sub(startTime).Seconds())
 }
 
+func TestTimeRate0(t *testing.T) {
+
+	num := rate.Every(time.Millisecond * 100) // 0.1=>每秒10个 100写成500每秒50个
+	// num := rate.Limit(10)                 // 10（每秒10个） 20 => 0.2  等价
+	limiter := rate.NewLimiter(num, 1000) // 1. 初始化一个令牌生成速率为limit，容量为burst的令牌桶
+	// limiter := rate.NewLimiter(0.05, 2)
+	fmt.Println(limiter.Burst()) // 1000
+	fmt.Println(limiter.Limit()) // 1/0.1 = 10
+
+}
+
 func TestTimeRate(t *testing.T) {
 
 	num := rate.Every(time.Millisecond * 100) // 0.1=>每秒10个 100写成500每秒50个
 	// num := rate.Limit(10)                // 10=>0.1（每秒10个） 20 => 0.2
 	limiter := rate.NewLimiter(num, 5) // 1. 初始化一个令牌生成速率为limit，容量为burst的令牌桶
+
 	// tag:容量为burst容量一开始就满了，然后下个时间频率继续产令牌
 	timer := time.NewTimer(time.Second * 3) // 定时器 5秒的定时器 5s后通道收到消息
 	quit := make(chan struct{})             // 通道
 	defer timer.Stop()
+	// tag:单独起一个协程 监听定时器收到消息主动close通道
 	go func() {
 		<-timer.C   // 定时器到期 定时器收到消息
 		close(quit) // 通知子协程都关闭
@@ -95,6 +108,7 @@ func TestTimeRate(t *testing.T) {
 	for i := 0; i < cpuNum; i++ {
 		wait.Add(1)
 		go func() {
+			// for + select 等价 range 持续监听
 			for {
 				select {
 				// 接收外部关闭消息

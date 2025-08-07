@@ -246,3 +246,24 @@ func TestBefore(t *testing.T) {
 		statDt = endDt.AddDate(0, 0, 1)
 	}
 }
+
+func TestFunc(t *testing.T) {
+	ttl := RemainingTimeNDay(time.Now().Unix(), 1) // 1表示当日
+	fmt.Println(ttl)
+}
+
+// RemainingTimeNDay 计算n天后的剩余时间戳
+func RemainingTimeNDay(t1 int64, n int) int64 {
+	// 转为时间
+	t := time.Unix(t1, 0)
+
+	// 获取今天的结束时间
+	endTime := time.Now().AddDate(0, 0, n-1)
+	endOfDay := time.Date(endTime.Year(), endTime.Month(), endTime.Day(), 23, 59, 59, 999999999, time.Now().Location())
+
+	// 计算剩余时间
+	remainingTime := endOfDay.Sub(t)
+
+	// 将剩余时间转换为秒，并返回
+	return int64(remainingTime.Seconds())
+}
