@@ -10,6 +10,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/davecgh/go-spew/spew"
+	"golang.org/x/sync/semaphore"
 	"golang.org/x/time/rate"
 ) // 需要import的rate库，其它import暂时忽略
 
@@ -31,63 +33,102 @@ func process(obj interface{}) (interface{}, error) {
 	time.Sleep(1)
 	nextInteger := integer * 10
 	if integer%99 == 0 {
-		return nextInteger, errors.New("not a happy number")
+		return nextInteger, errors.New("not a happy number") // 人为抛错
 	}
 	return nextInteger, nil
 }
 
+// panic: test timed out after 30s 默认30秒测试超时
 func TestRate(t *testing.T) {
-	// num := rate.Every(time.Millisecond * 5)
-	num := 5
-	limit := rate.Limit(num)                 // QPS：50 基础速率
-	burst := 300                             // 桶容量25
+	num := rate.Every(time.Millisecond * 5)
+	// tag: 速率
+	// num := rate.Every(time.Minute / 30) // tag: 每分钟10个
+	// num := 20  // 明确表示每秒20个令牌 等价rate.Every(time.Second / 20)   time.Millisecond*1000 / 20
+	// rate.Every(time.Millisecond * 50) // 每0.05秒1个令牌 → 1/0.05 = 20令牌/秒
+
+	limit := rate.Limit(num) // QPS：50 基础速率
+
+	burst := 10                              // 桶容量25 一初始化就有的数量 一下子就消耗完毕
 	limiter := rate.NewLimiter(limit, burst) // 1. 初始化一个令牌生成速率为limit，容量为burst的令牌桶
 
-	size := 500 // 数据量500
+	size := 100 // 数据量500
 	data := generateData(size)
-
-	var wg sync.WaitGroup // 工作组锁
+	ctx := context.Background()
+	var wg sync.WaitGroup // 工作组锁 使用channel或信号量控制最大并发数
 	startTime := time.Now()
 	for i, item := range data {
 		wg.Add(1)
 		go func(idx int, obj int) {
 			defer wg.Done()
-			t.Logf("idx:%d, start: %v", idx, time.Now().Format("2006-01-02 15:04:05.000"))
+			// 打印哪个idx抢到令牌了
+			spew.Printf("idx:%d, start: %v \n", idx, time.Now().Format("2006-01-02 15:04:05.000"))
 			// 2. Wait拿到令牌
-			if err := limiter.Wait(context.Background()); err != nil {
-				t.Logf("[%d] [EXCEPTION] wait err: %v", idx, err)
+			if err := limiter.Wait(ctx); err != nil {
+				spew.Println("idx:%d [EXCEPTION] wait err: %v", idx, err)
 			}
-			t.Logf("idx:%d, End: %v", idx, time.Now().Format("2006-01-02 15:04:05.000"))
+			spew.Printf("idx:%d, End: %v \n", idx, time.Now().Format("2006-01-02 15:04:05.000"))
 			// 执行业务逻辑
 			processed, err := process(obj)
 			if err != nil {
 				// 也要模拟处理时的报错
-				t.Logf("[%d] [ERROR] processed: %v, err: %v", idx, processed, err)
+				spew.Printf("[idx:%d] [ERROR] processed: %v, err: %v \n", idx, processed, err)
 			} else {
-				t.Logf("[%d] [OK] processed: %v", idx, processed)
+				spew.Printf("[idx:%d] [OK] processed: %v \n", idx, processed)
 			}
 		}(i, item)
 	}
 	wg.Wait()
 	endTime := time.Now()
-	t.Logf("start: %v, end: %v, seconds: %v", startTime, endTime, endTime.Sub(startTime).Seconds())
+	spew.Printf("start: %v, end: %v, seconds: %v", startTime, endTime, endTime.Sub(startTime).Seconds())
 }
 
-func TestTimeRate0(t *testing.T) {
+func TestRate2(t *testing.T) {
+	// num := rate.Every(time.Millisecond * 5)
+	num := rate.Every(time.Minute / 30) // 每分钟30个
+	limit := rate.Limit(num)
 
-	num := rate.Every(time.Millisecond * 100) // 0.1=>每秒10个 100写成500每秒50个
-	// num := rate.Limit(10)                 // 10（每秒10个） 20 => 0.2  等价
-	limiter := rate.NewLimiter(num, 1000) // 1. 初始化一个令牌生成速率为limit，容量为burst的令牌桶
-	// limiter := rate.NewLimiter(0.05, 2)
-	fmt.Println(limiter.Burst()) // 1000
-	fmt.Println(limiter.Limit()) // 1/0.1 = 10
+	limiter := rate.NewLimiter(limit, 10) // 1. 初始化一个令牌生成速率为limit，容量为burst的令牌桶
 
+	data := generateData(100)
+	ctx := context.Background()
+	// tag: 考虑桶先满的情况 就等待令牌拿掉
+	// tag: 生成令牌数量放缓 初始化10个拿完后，只能等每分钟10个令牌产生去拿取
+	var wg sync.WaitGroup
+	concurrent := semaphore.NewWeighted(1) // 使用channel或信号量控制最大并发数
+	startTime := time.Now()
+	for i, item := range data {
+		concurrent.Acquire(ctx, 1)
+		wg.Add(1)
+		go func(idx int, obj int) {
+			defer concurrent.Release(1) // 控制了最大并发数，次数数量如果为1时 idx就为顺序了
+			defer wg.Done()
+			// 打印哪个idx抢到令牌了
+			spew.Printf("idx:%d, start: %v \n", idx, time.Now().Format("2006-01-02 15:04:05.000"))
+			// 2. Wait拿到令牌
+			if err := limiter.Wait(ctx); err != nil {
+				spew.Println("idx:%d [EXCEPTION] wait err: %v", idx, err)
+			}
+			spew.Printf("idx:%d, End: %v \n", idx, time.Now().Format("2006-01-02 15:04:05.000"))
+			// 执行业务逻辑
+			processed, err := process(obj)
+			if err != nil {
+				// 也要模拟处理时的报错
+				spew.Printf("[idx:%d] [ERROR] processed: %v, err: %v \n", idx, processed, err)
+			} else {
+				spew.Printf("[idx:%d] [OK] processed: %v \n", idx, processed)
+			}
+		}(i, item)
+	}
+	wg.Wait()
+	endTime := time.Now()
+	spew.Printf("start: %v, end: %v, seconds: %v", startTime, endTime, endTime.Sub(startTime).Seconds())
 }
 
+// for select 持续监听
 func TestTimeRate(t *testing.T) {
 
 	num := rate.Every(time.Millisecond * 100) // 0.1=>每秒10个 100写成500每秒50个
-	// num := rate.Limit(10)                // 10=>0.1（每秒10个） 20 => 0.2
+	// num := rate.Every(time.Second / 10) 等价 0.1
 	limiter := rate.NewLimiter(num, 5) // 1. 初始化一个令牌生成速率为limit，容量为burst的令牌桶
 
 	// tag:容量为burst容量一开始就满了，然后下个时间频率继续产令牌
