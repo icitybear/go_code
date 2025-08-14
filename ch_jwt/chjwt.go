@@ -7,33 +7,38 @@ import (
 	"github.com/davecgh/go-spew/spew"
 	"github.com/golang-jwt/jwt"
 	jwtv4 "github.com/golang-jwt/jwt/v4"
+
+	jwtV1 "jwt/jwt2" // 使用的是jwt模块下的jwt2包
 )
 
-// func main() {
-// 	// jwt是包名
-// 	jwt.Secret = "123456"
+// $ go run ./chjwt.go
+// sign is eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEwMDAiLCJuYW1lIjoiY2hpaHVvIn0.1egKEEN3IRaK1wblqGzkJQ5wciKrssslqAAiLXo8iTA
+// verify ok%
+func main() {
+	// jwt是包名
+	jwtV1.Secret = "123456"
 
-// 	payload := struct {
-// 		Id   string `json:"id"`
-// 		Name string `json:"name"`
-// 	}{Id: "1000", Name: "chihuo"}
+	payload := struct {
+		Id   string `json:"id"`
+		Name string `json:"name"`
+	}{Id: "1000", Name: "chihuo"}
 
-// 	sign, err := jwt.Sign(payload)
-// 	if err != nil {
-// 		fmt.Printf("err %v\n", err)
-// 		return
-// 	}
+	sign, err := jwtV1.Sign(payload)
+	if err != nil {
+		fmt.Printf("err %v\n", err)
+		return
+	}
 
-// 	fmt.Printf("sign is %s\n", sign)
+	fmt.Printf("sign is %s\n", sign)
 
-// 	err = jwt.Verify(sign)
-// 	if err != nil {
-// 		fmt.Println(err)
-// 		return
-// 	}
+	err = jwtV1.Verify(sign)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 
-// 	fmt.Printf("verify ok")
-// }
+	fmt.Printf("verify ok")
+}
 
 type UserInfoClaims struct {
 	Id                     int      `json:"id"`
@@ -42,7 +47,7 @@ type UserInfoClaims struct {
 	jwtv4.RegisteredClaims          // 内嵌标准的声明
 }
 
-func main() {
+func main2() {
 
 	myClaims := UserInfoClaims{
 		1,

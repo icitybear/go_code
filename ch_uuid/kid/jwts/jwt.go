@@ -1,5 +1,5 @@
-package jwt2 // jwt2包 直接在jwt模块下 又建了jwt2目录（包）
-
+package jwts //tag: go文件名可以与目录名不一致，但是包名要与目录名一致
+// tag: jwts包 不像kid模块也就是默认kid包，有对应的go.mod文件 ，jwts是作为kid模块下的一个包使用 import时 kid/jwts
 import (
 	"crypto/hmac"
 	"crypto/sha256"

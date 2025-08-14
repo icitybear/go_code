@@ -1,4 +1,4 @@
-package chuuid_test
+package ch_uuid
 
 import (
 	// 第三方包 需要先 go get下 然后go mod dity修改go.sum
@@ -12,9 +12,59 @@ import (
 	uuid2 "github.com/google/uuid"
 
 	"github.com/rs/xid"
+
+	"kid" // 自身kid模块包 测试本地模块包 需要引入module require replace
+
+	jwt "kid/jwts" // 使用模块下的某个包
 )
 
-func TestXxx(t *testing.T) {
+// 直接终端使用命令行运行 终端进入ch_uuid目录  如果追加目录
+// $ /usr/local/go/bin/go test -timeout 30s -run ^TestKid$
+// 8ugpwzvu4p8gsh
+// PASS
+// ok      ch_uuid 0.021s
+func TestKid(t *testing.T) {
+
+	uuid := kid.New().String()
+	fmt.Println(uuid)
+}
+
+// $ /usr/local/go/bin/go test -timeout 30s -run ^TestJwt$
+// sign is eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEwMDAiLCJuYW1lIjoiY2hpaHVvIn0.1egKEEN3IRaK1wblqGzkJQ5wciKrssslqAAiLXo8iTA
+// verify okPASS
+// ok      ch_uuid 0.022s
+func TestJwt(t *testing.T) {
+	jwt.Secret = "123456"
+
+	payload := struct {
+		Id   string `json:"id"`
+		Name string `json:"name"`
+	}{Id: "1000", Name: "chihuo"}
+
+	sign, err := jwt.Sign(payload)
+	if err != nil {
+		fmt.Printf("err %v\n", err)
+		return
+	}
+
+	fmt.Printf("sign is %s\n", sign)
+
+	err = jwt.Verify(sign)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	fmt.Printf("verify ok")
+}
+
+// 因为vscode直接打开的code 直接使用ide工具运行测试
+// tag: /usr/local/go/bin/go test -timeout 30s -run ^TestKy$ code/ch_uuid
+// 会提示 package code/ch_uuid is not in GOROOT (/usr/local/go/src/code/ch_uuid)
+//
+//		package记得按目录命名
+//	 /usr/local/go/bin/go test -timeout 30s -run ^TestKy$ 才准确
+func TestKy(t *testing.T) {
 
 	// 生成唯一ID
 	id := xid.New()
