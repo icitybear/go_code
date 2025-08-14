@@ -1,4 +1,4 @@
-package main
+package aes
 
 //对称加密aes 速度快
 import (
@@ -7,7 +7,6 @@ import (
 	"crypto/cipher"
 	"crypto/rand"
 	"errors"
-	"fmt"
 	"io"
 )
 
@@ -125,26 +124,4 @@ func Decrypt(key, src []byte) (data []byte, err error) {
 	}
 
 	return ciphertext, nil
-}
-
-func main() {
-	//aes128 aes256 强度不一样
-	key := "01234567890123456789012345678912" //32位 钥匙
-	//待加密的内容 长度随意
-	str := "0citybear1"
-	// 加密
-	encrypt, err := Encrypt([]byte(key), []byte(str))
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	// 解密
-	decrypt, err := Decrypt([]byte(key), encrypt)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	fmt.Printf("str is %s\n", string(decrypt))
-
-	// 双方加密解密(go,java,php) aes算法要确定 1填充方式 2 iv向量的传递 放的位置还是额外传参 3加密的模式 CBC
 }
