@@ -395,3 +395,56 @@ func TestDecoder2(t *testing.T) {
 	d, _ := strconv.ParseFloat(c, 64)
 	fmt.Println(d)
 }
+
+type CustomerConf struct {
+	Event string             `json:"event"`
+	Data  []*CustomerMessage `json:"data"`
+}
+
+type CustomerMessage struct {
+	Op    string `json:"op"`
+	Event string `json:"event"`
+	Num   int32  `json:"num"`
+}
+
+func TestDecoderArrayObject(t *testing.T) {
+	var request = `{"event":"initiativeMessageCustomer","data":[{"op":"\u003e","event":"receive","num":32}]}`
+	// request = `[{"event":"initiativeMessageCustomer","data":[{"op":"\u003e","event":"receive","num":32}]}]`
+
+	// test1 := &CustomerConf{}
+	// err := json.Unmarshal([]byte(request), &test1) // 解码
+	// if err != nil {
+	// 	spew.Dump(err)
+	// 	return
+	// }
+	var data interface{}
+	err := json.Unmarshal([]byte(request), &data)
+	if err != nil {
+		spew.Dump(err)
+		return
+	}
+
+	var customType string
+	var result []*CustomerConf
+	switch data.(type) {
+	case map[string]interface{}:
+		customType = "object"
+		tmp := &CustomerConf{}
+		err := json.Unmarshal([]byte(request), tmp)
+		if err != nil {
+			spew.Dump(err)
+			return
+		}
+		// 此时旧数据的event字段要更换 目前旧数据都是constant.EventRuleCustomerInitiativeMessage
+		result = append(result, tmp)
+	case []interface{}:
+		customType = "array"
+		err := json.Unmarshal([]byte(request), &result)
+		if err != nil {
+			spew.Dump(err)
+			return
+		}
+	}
+	spew.Dump(customType)
+	spew.Dump(result)
+}

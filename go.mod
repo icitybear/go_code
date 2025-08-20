@@ -1,8 +1,12 @@
 module code
 
-go 1.19
+go 1.23.0
+
+toolchain go1.23.2
 
 require (
+	github.com/Knetic/govaluate v3.0.0+incompatible
+	github.com/bxcodec/faker v2.0.1+incompatible
 	github.com/easierway/concurrent_map v1.0.0
 	github.com/fogleman/gg v1.3.0
 	github.com/iancoleman/orderedmap v0.3.0
@@ -11,11 +15,10 @@ require (
 	github.com/mojocn/base64Captcha v1.3.8
 	github.com/smartystreets/goconvey v1.7.2
 	github.com/stretchr/testify v1.8.0
+	golang.org/x/sync v0.16.0
 )
 
 require (
-	github.com/Knetic/govaluate v3.0.0+incompatible // indirect
-	github.com/bxcodec/faker v2.0.1+incompatible // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/go-sql-driver/mysql v1.7.0 // indirect
@@ -25,7 +28,6 @@ require (
 	github.com/mozillazg/go-unidecode v0.2.0 // indirect
 	golang.org/x/exp v0.0.0-20221208152030-732eee02a75a // indirect
 	golang.org/x/image v0.25.0 // indirect
-	golang.org/x/sync v0.16.0 // indirect
 )
 
 require (
@@ -34,7 +36,6 @@ require (
 	github.com/duke-git/lancet/v2 v2.3.0
 	github.com/flike/kingshard v0.0.0-20240517234628-a15add435e15
 	github.com/go-redis/redis/v8 v8.11.5
-	github.com/google/uuid v1.6.0
 	github.com/gopherjs/gopherjs v0.0.0-20181017120253-0766667cb4d1 // indirect
 	github.com/jinzhu/copier v0.4.0
 	github.com/josharian/intern v1.0.0 // indirect
@@ -46,8 +47,6 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/richardlehane/mscfb v1.0.4 // indirect
 	github.com/richardlehane/msoleps v1.0.3 // indirect
-	github.com/rs/xid v1.5.0
-	github.com/satori/go.uuid v1.2.0
 	github.com/shopspring/decimal v1.4.0
 	github.com/smartystreets/assertions v1.2.0 // indirect
 	github.com/spaolacci/murmur3 v1.1.0

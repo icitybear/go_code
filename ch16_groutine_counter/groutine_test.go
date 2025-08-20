@@ -1,6 +1,8 @@
 package goroutine_test
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"runtime"
 	"sync"
@@ -9,6 +11,7 @@ import (
 	"time"
 
 	"github.com/davecgh/go-spew/spew"
+	"golang.org/x/sync/errgroup"
 )
 
 // 开启协程时的传参
@@ -374,3 +377,106 @@ func TestBingfa6(t *testing.T) {
 
 // result:[8 2 10 4 6]
 // 程序执行耗时(s): 1.00154425
+
+// 多协程错误处理
+func TestErrgroup(t *testing.T) {
+	start := time.Now()
+	// 锁 或者并发安全的map
+	var sliceLock sync.Mutex
+	arrSlice := []int{1, 2, 3, 4, 5, 6, 7, 8, 9}
+	var result []int
+	// 设置下顶层的超时时间 tag: 1*time.Second 和 2*time.Second 的区别; 错误优先赋值
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+	// ctx, cancel := context.WithCancel(context.Background())
+
+	defer cancel()
+	eg, gCtx := errgroup.WithContext(ctx)
+	eg.SetLimit(3) // tag: 最大并发数 这样就不使用信号量或channel
+
+	for pos, v := range arrSlice {
+		tmpPos := pos
+		tmpVal := v
+
+		// tag: 本身使用eg.Go方法就已经进入 内置的工作组了
+		eg.Go(func() error {
+			// tag: 内部sem通道进行阻塞 挂起要调用的这个闭包，但是都已经启动了 只是挂在g.sem <- token{}步骤
+			select {
+			case <-ctx.Done():
+				fmt.Printf("上层超时, pos:%d, 任务取消 err:%+v \n", tmpPos, ctx.Err())
+				return ctx.Err() // tag: 上层设置超时时间后， 会抛出context deadline exceeded 父级的上下文错误应该外抛 比较合理 此时gCtx.Err()也为context deadline exceeded了
+			case <-gCtx.Done(): // tag: 派生的context对应通道收到消息 或者其他上级ctx cancel和超时
+				fmt.Printf("pos:%d, 任务取消 err:%+v \n", tmpPos, gCtx.Err())
+				return gCtx.Err() // 此时为取消的情况 gCtx.Err()为context canceled 常量context.Canceled 超时错误是否外抛自己控制,
+				// tag: 此时返回错误没用，因为err在errgroup只会记录一次, 这个就是协程超时或取消收到的消息
+			// case <-time.After(1 * time.Second): // 本身协程的控制
+			// 	fmt.Printf("pos:%d, 任务提前完成\n", tmpPos)
+			// 	return nil
+			default:
+				// tag: 思考 result为啥要用 *[]int
+				fmt.Printf("pos:%d,val:%v 任务调用errProcessDealV2 \n", tmpPos, tmpVal)
+				err := errProcessDealV2(tmpPos, tmpVal, &sliceLock, &result)
+				//  context.Canceled 超时错误是否外抛自己控制
+				if err != nil {
+					return err // tag: 执行异常了 返回err就会终止其他（这个时候通过select监听gCtx）
+				}
+
+				return nil
+			}
+		})
+	}
+
+	if err := eg.Wait(); err != nil {
+		fmt.Println("整体任务执行出错:", err)
+	}
+	spew.Printf("result:%+v \n", result) // result:<nil> 的什么情况下会发生
+	// 正常情况 result:[4 2 6 8 10 ....]
+
+	// tag: 中间任务抛下err 初始化时是3个最大并发数
+	// pos:2,val:3 任务调用errProcessDealV2
+	// pos:1,val:2 任务调用errProcessDealV2
+	// pos:0,val:1 任务调用errProcessDealV2
+	// pos:5,val:6 任务调用errProcessDealV2
+	// pos:3,val:4 任务调用errProcessDealV2
+	// pos:4,val:5 任务调用errProcessDealV2
+	// pos:6, 任务取消 err:context canceled
+	// pos:7, 任务取消 err:context canceled
+	// pos:8, 任务取消 err:context canceled
+	// 整体任务执行出错: pos为5时特意抛出错误
+	// result:[2 4 6 8 10]
+	// 程序执行耗时(s): 4.002710375
+
+	// tag: 如果父级超时  到挂起的协程轮到时，此时顶层上下文的已经触发超时了
+	// pos:2,val:3 任务调用errProcessDealV2
+	// pos:0,val:1 任务调用errProcessDealV2
+	// pos:1,val:2 任务调用errProcessDealV2
+	// 上层超时, pos:5, 任务取消 err:context deadline exceeded
+	// 上层超时, pos:4, 任务取消 err:context deadline exceeded
+	// pos:6, 任务取消 err:context deadline exceeded
+	// 上层超时, pos:3, 任务取消 err:context deadline exceeded
+	// pos:7, 任务取消 err:context deadline exceeded
+	// pos:8, 任务取消 err:context deadline exceeded
+	// 整体任务执行出错: context deadline exceeded // tag: 此时这个上级的抛错速度更快(又因为只会赋值一次)
+	// result:[4 6 2]
+	// 程序执行耗时(s): 2.001787625
+	// PASS
+
+	end := time.Now()
+	consume := end.Sub(start).Seconds()
+	fmt.Println("程序执行耗时(s):", consume)
+}
+
+func errProcessDealV2(pos int, val int, mu *sync.Mutex, res *[]int) error {
+	if pos == 5 {
+		return errors.New("pos为5时特意抛出错误") // 故意制造的业务报错
+	}
+	time.Sleep(2 * time.Second)
+	// 并发安全需要保证
+	mu.Lock()
+	// fmt.Printf("[errProcessDealV2]pos:%d,val:%v lock \n", pos, val)
+	*res = append(*res, val*2) // tag: 切片是“引用类型”，但 append 可能会返回新切片 所以需要指针
+	mu.Unlock()
+	// 有上下文超时的错误
+	return nil
+}
+
+// /Users/chenshixiong/go/bin/go1.23.2 test -timeout 30s -run ^TestErrgroup$
