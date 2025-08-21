@@ -62,7 +62,8 @@ func randStr() string {
 func TestMd5(t *testing.T) {
 	// be19fe18d4363ccfcff17f3d81b649ed caid直接加密后 d4f932cebf2138abd48d2a07f5996a20
 	// 42ACABF7-1345-4A7E-A658-E108D8B20B1A
-	str := "be19fe18d4363ccfcff17f3d81b649ed"
+	// oaid base64 A7C77660850F4D7EB58C64E793955E951a9240a53631847e11d77aebe1c3d518
+	str := "A7C77660850F4D7EB58C64E793955E951a9240a53631847e11d77aebe1c3d518"
 	h := md5.New()
 	h.Write([]byte(str))
 	m := hex.EncodeToString(h.Sum(nil))
