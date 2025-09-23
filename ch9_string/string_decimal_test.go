@@ -2,12 +2,29 @@ package string_test
 
 import (
 	"fmt"
+	"math"
 	"strconv"
 	"strings"
 	"testing"
 
 	"github.com/shopspring/decimal"
 )
+
+func roundToTwoDecimalPlaces(num float64) float64 {
+	// num * 100：将小数点向右移动两位（如 3.1415926 → 314.15926）。
+	// math.Round()：四舍五入到最近的整数（314.15926 → 314）。
+	// / 100：将小数点移回两位（314 → 3.14），得到两位小数的 float64。
+	return math.Round(num*100) / 100
+
+	// 还有利用先转成字符串再转回float64
+	// strconv.FormatFloat(item.RunningProportion, 'f', 2, 64)
+}
+
+func TestAoti2(t *testing.T) {
+	num := 3.141592622
+	rounded := roundToTwoDecimalPlaces(num)
+	fmt.Printf("Original: %v, Rounded: %.2f\n", num, rounded)
+}
 
 // 字符串与数值转字符串
 func TestAoti(t *testing.T) {

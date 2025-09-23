@@ -6,7 +6,6 @@ toolchain go1.23.2
 
 require (
 	github.com/Knetic/govaluate v3.0.0+incompatible
-	github.com/bxcodec/faker v2.0.1+incompatible
 	github.com/easierway/concurrent_map v1.0.0
 	github.com/fogleman/gg v1.3.0
 	github.com/iancoleman/orderedmap v0.3.0
@@ -21,6 +20,7 @@ require (
 require (
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
+	github.com/go-faker/faker/v4 v4.6.1 // indirect
 	github.com/go-sql-driver/mysql v1.7.0 // indirect
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
@@ -55,7 +55,7 @@ require (
 	github.com/xuri/nfp v0.0.0-20230819163627-dc951e3ffe1a // indirect
 	golang.org/x/crypto v0.23.0 // indirect
 	golang.org/x/net v0.25.0 // indirect
-	golang.org/x/text v0.23.0 // indirect
+	golang.org/x/text v0.28.0 // indirect
 	golang.org/x/time v0.5.0
 	google.golang.org/protobuf v1.32.0
 	gopkg.in/yaml.v3 v3.0.1 // indirect

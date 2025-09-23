@@ -228,3 +228,13 @@ func TestEqual(t *testing.T) {
 	// }
 
 }
+
+func TestSliceL(t *testing.T) {
+	var s []int
+	for i := 0; i < 10; i++ {
+		s = append(s, i)
+	}
+	spew.Println(s)
+	// 这种写法必须确保切片之前的长度为7 不然panic
+	spew.Println(s[:7])
+}

@@ -36,6 +36,7 @@ type Post struct {
 	ID           int
 	UserID       int
 	Title        string
+	Status       int
 	User         User     `gorm:"foreignKey:UserID"` // 关联到 User 表 references:ID 可以加上 实战一般用指针 *User
 	CategoryCode string   `gorm:"column:code"`
 	Category     Category `gorm:"foreignKey:CategoryCode;references:Code"` // 关联到 Type 表 references:Code
@@ -82,6 +83,22 @@ func setupDatabase() (*gorm.DB, error) {
 	// 	db.Create(&cate)
 	// }
 	return db, nil
+}
+
+func TestLianlu(t *testing.T) {
+
+	db, err := setupDatabase()
+	if err != nil {
+		panic(err)
+	}
+	// gorm 的查询是链式的
+	var posts []Post
+	db = db.Where("user_id in (?)", []int{1, 5}) // 这里的一开始的=号不能省略
+	db.Where("status = ?", 1)                    // 这里的 db = 可以省略
+	db.Find(&posts)
+	for _, post := range posts {
+		fmt.Printf("UserID:%d title: %s status: %d\n", post.UserID, post.Title, post.Status)
+	}
 }
 
 // 不使用 Preload 的查询

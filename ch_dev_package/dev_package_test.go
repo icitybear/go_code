@@ -3,11 +3,14 @@ package ch_uuid
 import (
 	"encoding/hex"
 	"fmt"
+	"log"
 	"testing"
 	"time"
 
 	// 第三方包 需要先 go get下 然后go mod dity修改go.sum
+	"github.com/davecgh/go-spew/spew"
 	uuid "github.com/satori/go.uuid"
+	"github.com/spaolacci/murmur3"
 
 	uuid2 "github.com/google/uuid"
 
@@ -15,14 +18,18 @@ import (
 
 	"kid" // 自身kid模块包 测试本地模块包 需要引入module require replace
 
+	"kid/hash"
+	"kid/hashbucket"
 	jwt "kid/jwts" // 使用模块下的某个包
 
 	"kid/aes"
 
-	"crypto/rand"
+	crand "crypto/rand"
 	"crypto/rsa"
 	appRsa "kid/rsa"
-	mrand "math/rand"
+	"math/rand"
+
+	"im-robot/feishu"
 )
 
 // 直接终端使用命令行运行 终端进入ch_uuid目录  如果追加目录
@@ -94,11 +101,11 @@ func TestKy(t *testing.T) {
 
 	n := 32
 	const charset = "abcdefghijklmnopqrstuvwxyz0123456789"
-	mrand.Seed(time.Now().UnixNano())
+	rand.Seed(time.Now().UnixNano())
 
 	b := make([]byte, n)
 	for i := range b {
-		b[i] = charset[mrand.Intn(len(charset))]
+		b[i] = charset[rand.Intn(len(charset))]
 	}
 	fmt.Println(string(b))
 
@@ -132,7 +139,7 @@ func TestAes(t *testing.T) {
 // $ /usr/local/go/bin/go test -timeout 30s -run ^TestRsa$
 func TestRsa(t *testing.T) {
 	// crypto/rsa 包生成公钥和私钥  公钥密钥长度 2048  4096更长（金融用）
-	priKey, err := rsa.GenerateKey(rand.Reader, 4096) //现在是1行，实际工作对接时，获取公钥私钥的解析比较复杂
+	priKey, err := rsa.GenerateKey(crand.Reader, 4096) //现在是1行，实际工作对接时，获取公钥私钥的解析比较复杂
 
 	if err != nil {
 		return
@@ -176,8 +183,92 @@ func TestRsa(t *testing.T) {
 
 }
 
+// github.com/spaolacci/murmur3 离散性验证
+func TestHash64(t *testing.T) {
+	scale := 50 //概率
+	// 演示随机生成1w次hash的分布情况
+	hit1 := 0
+	hit2 := 0
+	uhit1 := 0
+	uhit2 := 0
+	for i := 0; i < 100; i++ {
+		text := randStr() // 生产的随机字符串
+		hash := murmur3.Sum32([]byte(text))
+		fmt.Printf("str: %s, Hash: %d\n", text, hash)
+		// 模是1000的情况
+		if hash%1000 < uint32(scale)*10 {
+			hit1 += 1
+		} else {
+			uhit1 += 1
+		}
+		// 模是100的情况
+		if hash%100 < uint32(scale) {
+			hit2 += 1
+		} else {
+			uhit2 += 1
+		}
+	}
+	// 不管模取多少 循环大于100后 概率都是接近scale
+	fmt.Printf("hit1: %d, uhit1: %d \n hit2: %d, uhit2: %d\n", hit1, uhit1, hit2, uhit2)
+}
+
+func randStr() string {
+	n := 32
+	const charset = "abcdefghijklmnopqrstuvwxyz0123456789"
+	rand.Seed(time.Now().UnixNano())
+
+	b := make([]byte, n)
+	for i := range b {
+		b[i] = charset[rand.Intn(len(charset))]
+	}
+	return string(b)
+}
+
+func TestHash32(t *testing.T) {
+	text := "Hello, World!"
+	hashValue := hash.Murmur3_32([]byte(text), 0)
+	fmt.Printf("Hash of '%s': 0x%x\n", text, hashValue)
+}
+
+func TestHashBucket(t *testing.T) {
+	text := "Hello, World!122"
+	bucket1 := hashbucket.GetBucketNum(text, 100)
+	fmt.Println(bucket1)
+	// 使用一致性哈希算法返回桶编号
+	bucket2 := hashbucket.GetBucketNumByConsistentHash(text, 100)
+	fmt.Println(bucket2)
+}
+
 // 解密后的数据: 01ddddcccc89
 // 签名后为: 95267041ffa5f04f4faf4ca82e7cf5a07fb1c6253ca9b96fa1da49109d43e62b503edfe15d9f825e5a52a2ab9bf026cb54f8ce83e134dbb4904b7db6c84423e40b4e9764c87ec9c77dcdce8f899e3e0fd2b4854536422439c6e322ef2f8f0bd48fe81c07f9fc9cca3d6ca34bd5ec90e7c9a2523e4244297b1ba2a534a4afbbfefa391342fc5ae9feea14fddca7c35c586efd3ee55a4de025f27657bd6a7ece8102af8e38d1cd98893bba9d03aace92b4ef62d47f3858835d10dec182d07fb84cb38a7328d6a365f9c8e713c300d6d63a3a1b5b044b3d32a60abd4a41c4c6ff07ccdf653784a3dd621731ba91cd798b4010b27ee660c7f63328000ffd1da3bc3be9fc7463259b28984f22a924a92160ba35ef213fa99b27586f0f1f1b062e97666c9146df1714eb71d049a90476efe4642fc96ace95f7f7b393575cc8b5e7b2419813337f0b353e6c45ea56fcd555920cb21a8badbc6ddb90f21c435eb7f5ef78cb05539293a17145f24c765657088dcb60620a2187cf1956663c828944c2e05b11025738c84aef510122d7a6a05ff47832e7b8655b6569a188d309263546ac04df89fa2e1cf734a43803d2ebb11bd7ca743b4273890e1f25797cb6c2886cb1374c6c24d99022e76a39265f2490540660920cb900aa126886ebc582fe92eb838156be2d8e983fd93de8b9cfcdc06daf2bc89a8de99789474c45eb4f60e383bfd7
 // 校验签名成功
 // PASS
 // ok      ch_uuid 2.243s
+
+func TestFeishu(t *testing.T) {
+	// https://open.feishu.cn/open-apis/bot/v2/hook/75396936-b96d-4d90-9793-7b1787716fc5
+	token := "75396936-b96d-4d90-9793-7b1787716fc5"
+	secret := "nw9ppinAkTeXVInkChowRf"
+
+	client := feishu.NewClient(token, secret)
+
+	text := feishu.NewText("文本") // 普通文案
+	a := feishu.NewA("百度超链接", "https://www.baidu.com/")
+	at := feishu.NewAT("all") // at 人
+
+	text1 := feishu.NewText("\r\n再来一次文本")
+	at1 := feishu.NewAT("陈世雄") // 正常文字不行
+
+	line := []feishu.PostItem{text, a, at, text1, at1} // 正航记录
+
+	msg := feishu.NewPostMessage()
+	msg.SetZHTitle("富文本标题").AppendZHContent(line) // 先是中文标题
+
+	req, resp, err := client.Send(msg)
+	if err != nil {
+		log.Print(err)
+		return
+	}
+	spew.Println(req)
+	spew.Println(resp)
+}

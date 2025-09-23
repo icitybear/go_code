@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/bxcodec/faker"
+	"github.com/go-faker/faker/v4"
 )
 
 type SomeStructWithTags struct {
@@ -12,8 +12,8 @@ type SomeStructWithTags struct {
 	Name      string  `faker:"name"`
 	Latitude  float32 `faker:"lat"`
 	Longitude float32 `faker:"long"`
-	// Val       string  `faker:"oneof: 1, 2"`
-	Val  string `faker:"year"`
+	Val       string  `faker:"oneof: 1, 2"`
+	// Val  string `faker:"year"`
 	Val1 string `faker:"year"`
 	// 新版faker才支持faker标签 oneof
 }

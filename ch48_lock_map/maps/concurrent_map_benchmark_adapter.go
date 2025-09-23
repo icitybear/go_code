@@ -2,6 +2,7 @@ package maps
 
 import "github.com/easierway/concurrent_map"
 
+// github.com/patrickmn/go-cache 已经实现
 type ConcurrentMapBenchmarkAdapter struct {
 	cm *concurrent_map.ConcurrentMap
 }

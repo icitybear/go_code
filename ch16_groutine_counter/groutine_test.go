@@ -101,6 +101,28 @@ func TestGroutine3(t *testing.T) {
 	fmt.Println("程序执行耗时(s):", consume)
 }
 
+func TestRace(t *testing.T) {
+	var wg sync.WaitGroup
+	max := 1000
+	wg.Add(max)
+	returnList := &[]int{}
+	for i := 0; i < max; i++ {
+		go func() {
+			defer wg.Done()
+			for j := 0; j < 100; j++ {
+				*returnList = append(*returnList, j) // 没有保护共享资源 会有竞态条件（数据竞争）
+			}
+			fmt.Println(len(*returnList), cap(*returnList))
+		}()
+	}
+	wg.Wait()
+	fmt.Println(len(*returnList), cap(*returnList))
+
+	// 按照常规理解，上面的代码最终 returnList 长度应该是 1000 * 100 = 10万
+	// 但实际上我执行了10来次，最终长度都在1万多而已
+
+}
+
 // 将线程加共享内存的方式称为「共享内存系统」,「消息传递系统」解决共享内存系统存在的问题(加锁来避免死锁或资源竞争)
 // Communicating Sequential Processes 中提出的，在 CSP 系统中，所有的并发操作都是通过独立线程以异步运行的方式来实现的。
 // 这些线程必须通过在彼此之间发送消息，从而向另一个线程请求信息或者将信息提供给另一个线程。
