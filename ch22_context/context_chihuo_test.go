@@ -9,7 +9,7 @@ import (
 
 // 可以看源码解析的那文章和视频
 func TestContext(t *testing.T) {
-	worker1()
+	worker3()
 }
 
 // 自动超时
@@ -43,10 +43,12 @@ func worker3() {
 	// 自动超时WithTimeout 5秒 发给ctx done了
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	// 发布结束
-	defer cancel()
+	defer cancel() // 通知子协程
 
 	// 定了0.5秒后 就使用select
 	go handle(ctx, 500*time.Millisecond, deep)
+
+	// 收到外部5s的
 	select {
 	case <-ctx.Done():
 		fmt.Println("worker3 ctx done", ctx.Err())
@@ -65,11 +67,12 @@ func handle(ctx context.Context, duration time.Duration, deep int) {
 		fmt.Printf("token is %s\n", ctx.Value("token"))
 	}
 
+	// tag: 监听 time.After 的同时加上 ctx.Done 就可以实现安全退出机制
 	select {
 	case <-ctx.Done():
 		fmt.Println("handle ctx.done", ctx.Err())
 		// 超时了 就执行
-	case <-time.After(duration):
+	case <-time.After(duration): // 除了ctx外 对子协程加了额外时间
 		fmt.Printf("process request with %v, %d\n", duration, deep)
 	}
 }

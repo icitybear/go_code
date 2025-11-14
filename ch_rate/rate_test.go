@@ -1,4 +1,4 @@
-package pinyin_test
+package rate_test
 
 import (
 	"context"
@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/davecgh/go-spew/spew"
+	"go.uber.org/ratelimit"
 	"golang.org/x/sync/semaphore"
 	"golang.org/x/time/rate"
 ) // 需要import的rate库，其它import暂时忽略
@@ -38,20 +39,48 @@ func process(obj interface{}) (interface{}, error) {
 	return nextInteger, nil
 }
 
+// 漏桶
+func TestRateLimit(t *testing.T) {
+	limiter := ratelimit.New(50) // 1.漏桶速率50
+
+	size := 300
+	data := generateData(size)
+
+	var wg sync.WaitGroup
+	startTime := time.Now()
+	for i, item := range data {
+		wg.Add(1)
+		go func(idx int, obj any) {
+			defer wg.Done()
+			limiter.Take() // 2. 入桶待漏
+			processed, err := process(obj)
+			if err != nil {
+				t.Logf("[%d] [ERROR] processed: %v, err: %v", idx, processed, err)
+			} else {
+				t.Logf("[%d] [OK] processed: %v", idx, processed)
+			}
+		}(i, item)
+	}
+	wg.Wait()
+	endTime := time.Now()
+	t.Logf("start: %v, end: %v, seconds: %v", startTime, endTime, endTime.Sub(startTime).Seconds())
+}
+
 // panic: test timed out after 30s 默认30秒测试超时
 func TestRate(t *testing.T) {
-	num := rate.Every(time.Millisecond * 5)
+	// num := rate.Every(time.Second * 5) // 每xxx产生1个
 	// tag: 速率
-	// num := rate.Every(time.Minute / 30) // tag: 每分钟10个
+	num := rate.Every(time.Second / 5) // tag: 每分钟10个
 	// num := 20  // 明确表示每秒20个令牌 等价rate.Every(time.Second / 20)   time.Millisecond*1000 / 20
 	// rate.Every(time.Millisecond * 50) // 每0.05秒1个令牌 → 1/0.05 = 20令牌/秒
 
 	limit := rate.Limit(num) // QPS：50 基础速率
 
-	burst := 10                              // 桶容量25 一初始化就有的数量 一下子就消耗完毕
+	// burst < limit时也能正常使用 burst实际相当于突然流量
+	burst := 1                               // 桶容量5 一初始化就有的数量 一下子就消耗完毕 第一秒的令牌数burst+limit
 	limiter := rate.NewLimiter(limit, burst) // 1. 初始化一个令牌生成速率为limit，容量为burst的令牌桶
 
-	size := 100 // 数据量500
+	size := 100 // 数据量
 	data := generateData(size)
 	ctx := context.Background()
 	var wg sync.WaitGroup // 工作组锁 使用channel或信号量控制最大并发数
@@ -60,12 +89,12 @@ func TestRate(t *testing.T) {
 		wg.Add(1)
 		go func(idx int, obj int) {
 			defer wg.Done()
-			// 打印哪个idx抢到令牌了
-			spew.Printf("idx:%d, start: %v \n", idx, time.Now().Format("2006-01-02 15:04:05.000"))
+			// spew.Printf("idx:%d, start: %v \n", idx, time.Now().Format("2006-01-02 15:04:05.000"))
 			// 2. Wait拿到令牌
 			if err := limiter.Wait(ctx); err != nil {
 				spew.Println("idx:%d [EXCEPTION] wait err: %v", idx, err)
 			}
+			// 打印哪个idx抢到令牌了
 			spew.Printf("idx:%d, End: %v \n", idx, time.Now().Format("2006-01-02 15:04:05.000"))
 			// 执行业务逻辑
 			processed, err := process(obj)

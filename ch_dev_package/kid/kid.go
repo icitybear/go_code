@@ -1,4 +1,4 @@
-package kid
+package kid // 可以放在module根目录 也可以自己起个目录放
 
 import (
 	"errors"

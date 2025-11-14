@@ -37,3 +37,9 @@ func TestSelect(t *testing.T) {
 		//t.Error("time out") //只要1000（xxx）小于500 就会报错超时
 	}
 }
+
+// time.Sleep 改成 time.After 可以降低 cpu 使用率
+// time.Sleep 不会让度 cpu 使用权（在这个代码里，cpu 被白白浪费 100ms 的时间）
+// time.After 会让度出来
+
+// 监听 time.After 的同时加上 ctx.Done 就可以实现安全退出机制

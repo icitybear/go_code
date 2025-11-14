@@ -87,20 +87,19 @@ func TestBet(t *testing.T) {
 	}
 }
 
-func TestFormat(t *testing.T) {
+func TestFormatDb(t *testing.T) {
 
-	str1 := "hhhhh" // 默认是0点
+	parsedTime := time.Now().AddDate(0, 0, -7)
+	fmt.Println(parsedTime.Format("2006-01-02"))
 	parsedTime1, _ := time.ParseInLocation("2006-01-02", "2025-06-07", time.Local)
 	parsedTime2, _ := time.ParseInLocation("2006-01-02", "2025-06-08", time.Local)
-	//before after不包含当日
+	// tag: before after不包含当日
 	if parsedTime1.Before(parsedTime2) {
-		fmt.Println(str1)
-		return
+		fmt.Println("before")
 	}
 	// After 这里直接对比的是日期 Ymd没包括时分秒
 	if parsedTime1.After(parsedTime2) {
-		fmt.Println(str1)
-		return
+		fmt.Println("after")
 	}
 	fmt.Println("end")
 }
@@ -250,6 +249,10 @@ func TestBefore(t *testing.T) {
 func TestFunc(t *testing.T) {
 	ttl := RemainingTimeNDay(time.Now().Unix(), 1) // 1表示当日
 	fmt.Println(ttl)
+
+	startTime := time.Now()
+	time.Sleep(3 * time.Second)
+	fmt.Println(time.Since(startTime).Seconds())
 }
 
 // RemainingTimeNDay 计算n天后的剩余时间戳
@@ -267,3 +270,7 @@ func RemainingTimeNDay(t1 int64, n int) int64 {
 	// 将剩余时间转换为秒，并返回
 	return int64(remainingTime.Seconds())
 }
+
+// time.Sleep 改成 time.After 可以降低 cpu 使用率
+// time.Sleep 不会让度 cpu 使用权（在这个代码里，cpu 被白白浪费 100ms 的时间）
+// time.After 会让度出来

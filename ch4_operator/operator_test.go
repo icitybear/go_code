@@ -2,6 +2,7 @@ package operator_test
 
 import (
 	"math"
+	"strconv"
 	"testing"
 )
 
@@ -43,8 +44,14 @@ func TestJisuan(t *testing.T) {
 	t.Log(a)
 	b := float32(710) / float32(100)
 	t.Log(b)
-	c := float64(710) / 100
+	c := float64(710) / 100 // 7.1
 	t.Log(c)
+
+	e := float64(1) / float64(3)
+	t.Log(e)
+	// Floor 0 ceil 1
+	d := math.Floor(float64(1) / 3)
+	t.Log(d)
 }
 
 func TestJisuan2(t *testing.T) {
@@ -52,4 +59,15 @@ func TestJisuan2(t *testing.T) {
 	pageSize := 100
 	res := math.Ceil(float64(count) / float64(pageSize))
 	t.Log(res)
+}
+
+func TestJisuan3(t *testing.T) {
+	a := ""
+	e, _ := strconv.ParseFloat(a, 64)
+	t.Log(e)
+	b := 100
+	c := strconv.FormatFloat(float64(b), 'f', -1, 64)
+	a += c
+	t.Log(a)
+
 }

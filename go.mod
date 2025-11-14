@@ -8,19 +8,22 @@ require (
 	github.com/Knetic/govaluate v3.0.0+incompatible
 	github.com/easierway/concurrent_map v1.0.0
 	github.com/fogleman/gg v1.3.0
+	github.com/go-faker/faker/v4 v4.6.1
 	github.com/iancoleman/orderedmap v0.3.0
 	github.com/julienschmidt/httprouter v1.3.0
 	github.com/mailru/easyjson v0.7.7
 	github.com/mojocn/base64Captcha v1.3.8
+	github.com/redis/go-redis/v9 v9.16.0
 	github.com/smartystreets/goconvey v1.7.2
 	github.com/stretchr/testify v1.8.0
+	go.uber.org/ratelimit v0.3.1
 	golang.org/x/sync v0.16.0
 )
 
 require (
-	github.com/cespare/xxhash/v2 v2.1.2 // indirect
+	github.com/benbjohnson/clock v1.3.0 // indirect
+	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
-	github.com/go-faker/faker/v4 v4.6.1 // indirect
 	github.com/go-sql-driver/mysql v1.7.0 // indirect
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
