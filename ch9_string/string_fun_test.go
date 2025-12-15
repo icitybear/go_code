@@ -61,7 +61,7 @@ func TestHas(t *testing.T) {
 		fmt.Printf("%s has suffix golang\n", s1)
 	}
 
-	// str := "外拍-沈铭炜-剧情-四月底wh2桃子0501-男用户-穿的很特别-翻剪-镜像二创-他趣"
+	// str := "外拍-沈铭炜-剧情-四月底wh2桃子0501-男用户-穿的很特别-翻剪-镜像二创-xxx"
 	str := "web.business.image/202410085d0dbb6ef08fd6a64ab986e"
 	fmt.Println(len(str))
 	fmt.Println((utf8.RuneCountInString(str)))
@@ -194,16 +194,16 @@ func TestFmt(t *testing.T) {
 func TestSplit(t *testing.T) {
 	// str := "1,"
 	str := ""
-	tmp := strings.Split(str, ",") // tag:就算返回空数组 长度也是1
-	fmt.Printf("tmp is:%+v str_len:%d arr_len:%d \n", tmp, len(str), len(tmp))
+	tmp := strings.Split(str, ",")                                             // tag:就算返回空数组 长度也是1
+	fmt.Printf("tmp is:%+v str_len:%d arr_len:%d \n", tmp, len(str), len(tmp)) // tmp is:[] str_len:0 arr_len:1
 	arr := []string{}
 	// var arr = make([]string, 1)
-	fmt.Printf("arr is:%+v  arr_len:%d \n", arr, len(arr))
+	fmt.Printf("arr is:%+v  arr_len:%d \n", arr, len(arr)) // arr is:[]  arr_len:0
 
 	arr1 := []string{}
 	// arr1 := []string{"1", "v2", "", "4"}
 	jnStr := strings.Join(arr1, ",")
-	fmt.Printf("jnStr is:%+v  jnStr_len:%d \n", jnStr, len(jnStr))
+	fmt.Printf("jnStr is:%+v  jnStr_len:%d \n", jnStr, len(jnStr)) // jnStr is:  jnStr_len:0
 }
 
 func TestJoin(t *testing.T) {
@@ -279,10 +279,10 @@ func TestRegex(t *testing.T) {
 
 func TestRegex2(t *testing.T) {
 	// str := "xxx-xxx-xxx-xxx-[xxx1]"
-	str := "他趣-广点通-达人一口价-[非荷-[xcxx]尔蒙]-口播-[一手]-玉莹-xxxx"
+	str := "xxx-广点通-达人一口价-[非荷-[xcxx]尔蒙]-口播-[一手]-玉莹-xxxx"
 
 	// 含有全角的字符 中文的肯定是全角【】 还有特殊的英文使用全角"［软暗示］"
-	// str := "他趣-通用-达人-［软暗示］-剧 情-翻剪-谷玉莹-49敲椰壳-三句话满足我-不是说 好不生气的嘛这咋这么熊人#情侣日常#生活日常 #-放大特效-sg.mp4"
+	// str := "xxx-通用-达人-［软暗示］-剧 情-翻剪-谷玉莹-49敲椰壳-三句话满足我-不是说 好不生气的嘛这咋这么熊人#情侣日常#生活日常 #-放大特效-sg.mp4"
 
 	pattern := `-\[(.*)\]-?`
 	// .* 非荷-[xcxx
@@ -311,7 +311,7 @@ func TestRegex2(t *testing.T) {
 // }
 
 func TestRegex3(t *testing.T) {
-	text := "他趣-广点通-达人一口价-[非荷尔蒙]-口播-[一手]-玉莹-xxxx"
+	text := "xxx-广点通-达人一口价-[非荷尔蒙]-口播-[一手]-玉莹-xxxx"
 
 	// 正则表达式模式说明：
 	// ()捕获组  反斜杠\  ?贪婪模式

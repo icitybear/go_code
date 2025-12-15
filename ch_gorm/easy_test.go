@@ -71,8 +71,29 @@ func TestFrist(t *testing.T) {
 	}
 	fmt.Printf("数据库资源%#v", db)
 
-	var uu UserInfo
-	res := db.Find(&uu, "hobby=?", "足球1")
-	fmt.Println(res.Error)
-	fmt.Println(uu)
+	// var uu UserInfo
+	// res := db.Find(&uu, "hobby=?", "足球1")
+	// fmt.Println(res.Error)
+	// fmt.Println(uu)
+
+	// 测试save
+	info := &User{}
+	db.Find(&info).Where("name = ?", "User1")
+	fmt.Println(info)
+
+	updInfo := &User{
+		ID:   3,
+		Name: "citybear",
+		// Status字段 默认0值覆盖 save 可以通过select避免
+	}
+	cmd := db.Model(&User{}).Save(updInfo)
+	fmt.Println(cmd)
+
+	updInfo1 := &User{
+		// ID:     8, // 未指定id或默认零值 （主键）的情况下 默认插入 指定的情况下只会更新
+		Name:   "citybear2",
+		Status: 3,
+	}
+	cmd2 := db.Model(&User{}).Save(updInfo1)
+	fmt.Println(cmd2)
 }

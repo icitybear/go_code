@@ -274,3 +274,57 @@ func RemainingTimeNDay(t1 int64, n int) int64 {
 // time.Sleep 改成 time.After 可以降低 cpu 使用率
 // time.Sleep 不会让度 cpu 使用权（在这个代码里，cpu 被白白浪费 100ms 的时间）
 // time.After 会让度出来
+
+// GetISOWeekNumber 根据周一和周日的日期计算ISO周数和年份
+// 参数: mondayStr, sundayStr - 格式为"2006-01-02"的日期字符串
+// 返回值: year, week - ISO年份和周数；error - 错误信息
+func GetISOWeekNumber(mondayStr, sundayStr string) (year, week int, err error) {
+	// 解析日期字符串（使用UTC时区）
+	layout := "2006-01-02"
+	monday, err := time.Parse(layout, mondayStr)
+	if err != nil {
+		return 0, 0, fmt.Errorf("invalid Monday date: %v", err)
+	}
+	sunday, err := time.Parse(layout, sundayStr)
+	if err != nil {
+		return 0, 0, fmt.Errorf("invalid Sunday date: %v", err)
+	}
+
+	// 验证周一和周日的关系
+	if monday.Weekday() != time.Monday {
+		return 0, 0, fmt.Errorf("the first date is not a Monday")
+	}
+	if sunday.Weekday() != time.Sunday {
+		return 0, 0, fmt.Errorf("the second date is not a Sunday")
+	}
+	if sunday.Sub(monday) != 6*24*time.Hour {
+		return 0, 0, fmt.Errorf("the interval between dates is not exactly 6 days")
+	}
+
+	// 使用周四计算ISO周（确保跨年周计算正确）
+	thursday := monday.Add(3 * 24 * time.Hour)
+	year, week = thursday.ISOWeek()
+	return year, week, nil
+}
+
+// 示例使用
+func TestFuncWeek(t *testing.T) {
+	// 示例1: 2025年第一周（跨年）
+	monday := "2024-12-30"
+	sunday := "2025-01-05"
+	year, week, err := GetISOWeekNumber(monday, sunday)
+	if err != nil {
+		fmt.Println("Error:", err)
+	} else {
+		fmt.Printf("Date: %s to %s -> ISO Year: %d, Week: %d\n", monday, sunday, year, week)
+	}
+
+	monday = "2025-12-01"
+	sunday = "2025-12-07"
+	year, week, err = GetISOWeekNumber(monday, sunday)
+	if err != nil {
+		fmt.Println("Error:", err)
+	} else {
+		fmt.Printf("Date: %s to %s -> ISO Year: %d, Week: %d\n", monday, sunday, year, week)
+	}
+}

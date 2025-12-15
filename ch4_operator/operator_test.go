@@ -1,9 +1,12 @@
 package operator_test
 
 import (
+	"fmt"
 	"math"
 	"strconv"
 	"testing"
+
+	"github.com/shopspring/decimal"
 )
 
 const (
@@ -47,11 +50,25 @@ func TestJisuan(t *testing.T) {
 	c := float64(710) / 100 // 7.1
 	t.Log(c)
 
+	// 取整
 	e := float64(1) / float64(3)
-	t.Log(e)
+	t.Log(e) // 0.3333333333333333
 	// Floor 0 ceil 1
 	d := math.Floor(float64(1) / 3)
 	t.Log(d)
+
+	// 保留小数点
+	f := math.Round((float64(3251243) / float64(76755833)) * 10000) // n位小数
+	t.Log(f)
+
+	str := fmt.Sprintf("%.4f", float64(3251243)/float64(76755833)) // 0.0424
+	t.Log(str)
+
+	// 高精度
+	decimalValue := decimal.NewFromFloat(0.3333333333333333)
+	// 乘以 100，使用 decimal 的 Mul 方法
+	decimalValue = decimalValue.Mul(decimal.NewFromInt(100))
+	t.Log(decimalValue) // 33.33333333333333
 }
 
 func TestJisuan2(t *testing.T) {

@@ -160,8 +160,8 @@ func TestParse2(t *testing.T) {
 	// rawURL := "https://example.com/path/to/resource?name=廖康子&age=25&city=北京#section"
 
 	// 含有特殊符号的情况 空格百分号
-	rawURL := "https://admp-public.jiaoliuqu.com/外拍-廖康子-荷尔蒙-口播-1216bj8啵啵-90%男生不知道-翻剪-镜像二创-他趣 (5).mp4"
-	// rawURL := "https://admp-public.jiaoliuqu.com/外拍-廖康子-荷尔蒙-口播-1216bj8啵啵-90男生不知道-翻剪-镜像二创-他趣(5).mp4"
+	rawURL := "https://admp-public.xxx.com/外拍-廖康子-荷尔蒙-口播-1216bj8啵啵-90%男生不知道-翻剪-镜像二创-xxx (5).mp4"
+	// rawURL := "https://admp-public.xxx.com/外拍-廖康子-荷尔蒙-口播-1216bj8啵啵-90男生不知道-翻剪-镜像二创-xxx(5).mp4"
 	encodedPath := url.PathEscape(rawURL)
 	fmt.Println(0, encodedPath)
 	if validator.IsUrl(rawURL) == false {
@@ -179,7 +179,7 @@ func TestParse2(t *testing.T) {
 		// 未编码的非 ASCII 字符（如中文字符、é、ñ 等）。
 
 		// 分割 URL 和文件名 这种不规范
-		// rawURL := "https://admp-public.jiaoliuqu.com/外拍-廖康子-荷尔蒙-口播-1216bj8啵啵-90%男生不知道-翻剪-镜像二创-他趣 (5).mp4"
+		// rawURL := "https://admp-public.xxx.com/外拍-廖康子-荷尔蒙-口播-1216bj8啵啵-90%男生不知道-翻剪-镜像二创-xxx (5).mp4"
 		lastSlashIndex := strings.LastIndex(rawURL, "/")
 		baseURL := rawURL[:lastSlashIndex+1]
 		fileName := rawURL[lastSlashIndex+1:]
